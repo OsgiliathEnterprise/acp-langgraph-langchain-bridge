@@ -1,23 +1,18 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
-
-group = "net.osgiliath.prompt"
-version = "1.0-SNAPSHOT"
-tasks.wrapper {
-    gradleVersion = "9.3.1"
-    distributionType = Wrapper.DistributionType.BIN
-}
-
 plugins {
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.6"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
     id("idea")
-    wrapper
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
+    `maven-publish`
     kotlin("jvm") version "2.1.10"
 }
+
+group = "net.osgiliath.prompt"
+version = "1.0-SNAPSHOT"
 tasks.withType<Test>().configureEach {
         useJUnitPlatform()
 
@@ -83,7 +78,6 @@ configurations.all {
 }
 
 dependencies {
-    "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     "implementation"(platform("io.cucumber:cucumber-bom:7.34.2"))
     "implementation"(platform("org.bsc.langgraph4j:langgraph4j-bom:1.8.3"))
     "implementation"(platform("dev.langchain4j:langchain4j-bom:1.11.0"))
@@ -120,7 +114,8 @@ dependencies {
     // Import JUnit BOM AFTER Spring Boot to override its version management
     testImplementation(platform("org.junit:junit-bom:5.14.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-
+    "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
     // Testing utilities
     testImplementation("org.awaitility:awaitility:4.2.2")
 
@@ -140,6 +135,18 @@ tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
     standardInput = System.`in`
 }
 
-springBoot {
-    mainClass.set("net.osgiliath.acplanggraphlangchainbridge.CodePromptFrameworkApplication")
+// Publishing configuration for local Maven repository
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            groupId = "net.osgiliath.prompt"
+            artifactId = "acp-langraph-langchain-bridge"
+            version = "1.0-SNAPSHOT"
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
 }
+
