@@ -33,7 +33,7 @@ import java.util.stream.Collectors
  */
 @Component
 class AcpAgentRunner(
-    private val javaSupport: AcpAgentSupportBridge
+    private val AgentSupportBridge: AcpAgentSupportBridge
 ) : CommandLineRunner {
 
     private val log = LoggerFactory.getLogger(AcpAgentRunner::class.java)
@@ -52,14 +52,14 @@ class AcpAgentRunner(
             
             val agentSupport = object : AgentSupport {
                 override suspend fun initialize(clientInfo: com.agentclientprotocol.client.ClientInfo): AgentInfo {
-                    val javaInfo = javaSupport.agentInfo
+                    val agentInfo = AgentSupportBridge.agentInfo
                     return AgentInfo(
-                        implementation = Implementation(javaInfo.name, javaInfo.version)
+                        implementation = Implementation(agentInfo.name, agentInfo.version)
                     )
                 }
 
                 override suspend fun createSession(sessionParameters: SessionCreationParameters): AgentSession {
-                    val javaSession = javaSupport.createSession(
+                    val javaSession = AgentSupportBridge.createSession(
                         "default-session", 
                         sessionParameters.cwd,
                         emptyMap()
