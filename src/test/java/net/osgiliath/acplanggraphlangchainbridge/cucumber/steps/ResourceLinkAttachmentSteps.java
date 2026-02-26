@@ -105,12 +105,11 @@ public class ResourceLinkAttachmentSteps {
 
     @Given("the ResourceLink has mimeType {string}")
     public void resourceLinkHasMimeType(String mimeType) {
-        if (!currentResourceLinks.isEmpty()) {
-            ContentBlock.ResourceLink last = currentResourceLinks.get(currentResourceLinks.size() - 1);
-            // Note: ResourceLink is immutable, so we'd need to recreate it with new mimeType
-            // This is a simplified demonstration
-            log.debug("ResourceLink mimeType set to: {}", mimeType);
-        }
+        ensureResourceLinkExists();
+        ContentBlock.ResourceLink last = currentResourceLinks.get(currentResourceLinks.size() - 1);
+        currentResourceLinks.set(currentResourceLinks.size() - 1,
+            updateResourceLink(last, null, null, null, mimeType));
+        log.debug("ResourceLink mimeType updated to: {}", mimeType);
     }
 
     @Given("I have a ResourceLink pointing to file {string}")
