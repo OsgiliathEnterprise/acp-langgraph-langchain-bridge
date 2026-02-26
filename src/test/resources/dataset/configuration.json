@@ -1,0 +1,22 @@
+{
+  "application": {
+    "name": "ERP Application",
+    "version": "1.0.0",
+    "environment": "production",
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "erp_db"
+    },
+    "logging": {
+      "level": "INFO",
+      "format": "JSON"
+    },
+    "features": {
+      "acp_enabled": true,
+      "langgraph_enabled": true,
+      "attachment_support": true
+    }
+  }
+}
+

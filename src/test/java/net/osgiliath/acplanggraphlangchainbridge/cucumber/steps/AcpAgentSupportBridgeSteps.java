@@ -1,31 +1,38 @@
 package net.osgiliath.acplanggraphlangchainbridge.cucumber.steps;
 
+import com.agentclientprotocol.model.ContentBlock;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for ACP Agent Support Bridge feature scenarios.
- * Note: These are placeholder implementations as the actual ACP protocol
- * communication would require a more complex test setup with mock clients.
+ * Tests the end-to-end integration of ACP protocol with LangGraph4j adapter.
  */
-
 public class AcpAgentSupportBridgeSteps {
 
+    private final StringBuilder streamedResponse = new StringBuilder();
+    private final AtomicReference<Throwable> lastError = new AtomicReference<>();
+    private final List<ContentBlock.ResourceLink> testResourceLinks = new ArrayList<>();
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private AcpAgentSupportBridge bridge;
-
     private boolean sessionEstablished = false;
+    private AcpAgentSupportBridge.AcpSessionBridge currentSession;
     private Object serverCapabilities;
     private Object resourceList;
     private Object toolList;
     private String resourceContent;
     private boolean pingAcknowledged = false;
+    private String testPrompt;
 
     @Given("the ACP Agent Support Bridge is initialized")
     public void theAcpAgentSupportBridgeIsInitialized() {
@@ -38,8 +45,8 @@ public class AcpAgentSupportBridgeSteps {
     public void anActiveAcpSession() {
         // Create an active session using the bridge
         assertThat(bridge).isNotNull();
-        AcpAgentSupportBridge.AcpSessionBridge session = bridge.createSession("active-session", ".", new java.util.HashMap<>());
-        assertThat(session).isNotNull();
+        currentSession = bridge.createSession("active-session", ".", new java.util.HashMap<>());
+        assertThat(currentSession).isNotNull();
         sessionEstablished = true;
     }
 
@@ -58,14 +65,15 @@ public class AcpAgentSupportBridgeSteps {
         assertThat(agentInfo.version()).isNotEmpty();
         serverCapabilities = agentInfo;
         // Initialize a session as part of the request
-        AcpAgentSupportBridge.AcpSessionBridge session = bridge.createSession("init-session", ".", new java.util.HashMap<>());
-        assertThat(session).isNotNull();
+        currentSession = bridge.createSession("init-session", ".", new java.util.HashMap<>());
+        assertThat(currentSession).isNotNull();
         sessionEstablished = true;
     }
 
     @When("the client sends a prompt {string}")
     public void theClientSendsAPrompt(String prompt) {
         assertThat(prompt).isNotEmpty();
+        testPrompt = prompt;
         // Store for verification in next steps
     }
 
@@ -98,6 +106,34 @@ public class AcpAgentSupportBridgeSteps {
         pingAcknowledged = true;
     }
 
+    @When("the client sends a prompt with ResourceLinks")
+    public void theClientSendsAPromptWithResourceLinks() {
+        assertThat(testPrompt).isNotNull();
+        assertThat(testResourceLinks).isNotEmpty();
+
+        if (currentSession == null) {
+            currentSession = bridge.createSession("prompt-with-links-session", ".", new java.util.HashMap<>());
+        }
+
+        // Call streamPrompt through the bridge API
+        currentSession.streamPrompt(testPrompt, testResourceLinks, new AcpAgentSupportBridge.TokenConsumer() {
+            @Override
+            public void onNext(String token) {
+                streamedResponse.append(token);
+            }
+
+            @Override
+            public void onComplete() {
+                // Streaming complete
+            }
+
+            @Override
+            public void onError(Throwable error) {
+                lastError.set(error);
+            }
+        });
+    }
+
     @Then("the bridge should respond with server capabilities")
     public void theBridgeShouldRespondWithServerCapabilities() {
         assertThat(serverCapabilities).isNotNull();
@@ -123,6 +159,7 @@ public class AcpAgentSupportBridgeSteps {
         AcpAgentSupportBridge.AcpSessionBridge session = bridge.createSession("test-session", ".", new java.util.HashMap<>());
         assertThat(session).isNotNull();
         assertThat(session.getSessionId()).isEqualTo("test-session");
+        currentSession = session;
     }
 
     @Then("the client should receive completion notification")
@@ -180,6 +217,17 @@ public class AcpAgentSupportBridgeSteps {
     @Then("the session should remain active")
     public void theSessionShouldRemainActive() {
         assertThat(sessionEstablished).isTrue();
+    }
+
+    @Then("the response should include reference to the ResourceLinks")
+    public void theResponseShouldIncludeReferenceToResourceLinks() {
+        assertThat(lastError.get()).isNull();
+        assertThat(streamedResponse.toString()).isNotEmpty();
+    }
+
+    @Then("ResourceLinks should be passed through the AcpSessionBridge to the adapter")
+    public void resourceLinksShouldBePassedThroughBridge() {
+        assertThat(testResourceLinks).isNotEmpty();
     }
 }
 

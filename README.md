@@ -167,3 +167,9 @@ public class MyGraph implements PromptGraph {
 }
 ```
 
+## Build
+
+```bash
+./gradlew clean build publishToMavenLocal
+```
+

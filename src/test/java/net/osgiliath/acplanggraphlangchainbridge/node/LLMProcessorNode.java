@@ -64,6 +64,16 @@ public class LLMProcessorNode implements NodeAction<ChatState> {
                 .map(UserMessage::singleText)
                 .orElse("");
 
+        // Extract ResourceLinks from state if present
+        final String attachmentContext;
+        Object attachmentsMetaObj = state.value("attachmentsMeta").orElse(null);
+        if (attachmentsMetaObj != null) {
+            attachmentContext = "\n[ResourceLinks available in state: " + attachmentsMetaObj + "]";
+            log.debug("LLMProcessorNode processing with attachments: {}", attachmentsMetaObj);
+        } else {
+            attachmentContext = "";
+        }
+
         // Use the @AiService DSL — system prompt is declared via @SystemMessage
         // on JavaSpringBootAssistant, model & HTTP client are auto-configured.
         TokenStream tokenStream = new TokenStream() {
@@ -108,13 +118,25 @@ public class LLMProcessorNode implements NodeAction<ChatState> {
             @Override
             public void start() {
                 try {
+                    // Stream tokens sequentially to the partial handler
                     if (partialHandler != null) {
+                        // First, emit "inprogress" to indicate processing has started
                         partialHandler.accept("inprogress");
+
+                        // If there are attachments, emit "processed" token
+                        if (!attachmentContext.isEmpty()) {
+                            partialHandler.accept("processed");
+                        }
+
+                        // Finally, emit "done" to indicate processing is complete
                         partialHandler.accept("done");
                     }
+
+                    // Call the complete handler with the final response
                     if (completeHandler != null) {
+                        String finalResponse = "Response: " + userMessageText + attachmentContext;
                         completeHandler.accept(ChatResponse.builder()
-                            .aiMessage(AiMessage.from("inprogressdone"))
+                            .aiMessage(AiMessage.from(finalResponse))
                             .build());
                     }
                 } catch (Throwable t) {

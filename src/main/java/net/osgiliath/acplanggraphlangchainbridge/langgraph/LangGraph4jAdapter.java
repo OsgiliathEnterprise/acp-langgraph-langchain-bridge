@@ -4,6 +4,7 @@ import com.agentclientprotocol.model.ContentBlock;
 import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
@@ -53,12 +54,22 @@ public class LangGraph4jAdapter {
      *
      * <p>Each token is delivered to the {@code consumer} as soon as the model
      * produces it. The method blocks until the full response has been streamed.</p>
+     *
+     * <p>ResourceLinks are embedded as {@link ResourceLinkContent} in the UserMessage,
+     * following LangChain4j's multimodal content pattern.</p>
      */
     public void streamPrompt(String promptText,
                              List<ContentBlock.ResourceLink> resourceLinks,
                              AcpAgentSupportBridge.TokenConsumer consumer) {
         log.debug("Adapter streaming prompt: {}...",
             promptText.length() > 50 ? promptText.substring(0, 50) : promptText);
+
+        if (resourceLinks != null && !resourceLinks.isEmpty()) {
+            log.debug("Adapter received {} ResourceLink(s)", resourceLinks.size());
+            resourceLinks.forEach(link ->
+                log.debug("  - ResourceLink: name={}, uri={}", link.getName(), link.getUri())
+            );
+        }
 
         if (promptText == null || promptText.isBlank()) {
             consumer.onNext("Please provide a prompt.");
@@ -77,13 +88,29 @@ public class LangGraph4jAdapter {
 
         try {
             var app = workflow.compile();
-            var userMessage = UserMessage.from(promptText);
+
+            // Create UserMessage with only text content
+            // ResourceLinks will be stored separately in the state to avoid casting issues
+            UserMessage userMessage = UserMessage.from(promptText);
+
+            // Build initial state with the message and separate attachments
+            Map<String, Object> initialState = new java.util.HashMap<>();
+            initialState.put("messages", userMessage);
+
+            // Store ResourceLinks as ResourceLinkContent in a separate state field
+            // This approach avoids issues with LLM systems trying to cast mixed Content types
+            if (resourceLinks != null && !resourceLinks.isEmpty()) {
+                List<ResourceLinkContent> linkContents = resourceLinks.stream()
+                    .map(ResourceLinkContent::from)
+                    .toList();
+
+                initialState.put(ChatState.ATTACHMENTS_META, linkContents);
+                log.debug("Stored {} ResourceLinkContent(s) in attachmentsMeta state field", linkContents.size());
+            }
 
             // app.stream() yields StreamingOutput (token chunks) interleaved
             // with NodeOutput (state snapshots). We forward only the chunks.
-            var states = app.stream(Map.of(
-                "messages", userMessage
-            ));
+            var states = app.stream(initialState);
 
             states.forEach(nodeOutput -> {
                 if (nodeOutput instanceof StreamingOutput<ChatState> streamingOutput) {

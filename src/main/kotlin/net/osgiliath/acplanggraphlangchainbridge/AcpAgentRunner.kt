@@ -92,6 +92,7 @@ class AcpAgentRunner(
                 while (iterator.hasNext()) {
                     log.debug("Content name: ${iterator.next()}")
                 }
+                log.debug("Meta information: ${_meta}")
             }
             val promptText = content.filterIsInstance<ContentBlock.Text>()
                 .joinToString("\n") { it.text }
