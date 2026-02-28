@@ -6,6 +6,9 @@ import dev.langchain4j.data.message.Content;
 import dev.langchain4j.data.message.ContentType;
 import kotlinx.serialization.json.JsonElement;
 
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
 import java.util.Objects;
 
 /**
@@ -28,16 +31,22 @@ import java.util.Objects;
  * </ul>
  * </p>
  */
-public record ResourceLinkContent(String name, String uri, String description, String mimeType, Long size, String title,
+public record ResourceLinkContent(String name, URI uri, String description, String mimeType, Long size, String title,
                                   Annotations annotations, JsonElement meta) implements Content {
 
-    public ResourceLinkContent(String name, String uri, String description,
+    public ResourceLinkContent(String name, URI uri, String description,
                                String mimeType, Long size, String title,
                                Annotations annotations, JsonElement meta) {
         this.name = Objects.requireNonNull(name, "name cannot be null");
         this.uri = Objects.requireNonNull(uri, "uri cannot be null");
         this.description = description;
-        this.mimeType = mimeType;
+        String mime = null;
+        try {
+            mime = mimeType != null ? mimeType : Files.probeContentType(java.nio.file.Paths.get(uri));
+        } catch (IOException e) {
+
+        }
+        this.mimeType = mime;
         this.size = size;
         this.title = title;
         this.annotations = annotations;
@@ -53,7 +62,7 @@ public record ResourceLinkContent(String name, String uri, String description, S
         }
         return new ResourceLinkContent(
                 link.getName(),
-                link.getUri(),
+                URI.create(link.getUri()),
                 link.getDescription(),
                 link.getMimeType(),
                 link.getSize(),
@@ -69,7 +78,7 @@ public record ResourceLinkContent(String name, String uri, String description, S
     public ContentBlock.ResourceLink toResourceLink() {
         return new ContentBlock.ResourceLink(
                 name,
-                uri,
+                uri.toString(),
                 description,
                 mimeType,
                 size,

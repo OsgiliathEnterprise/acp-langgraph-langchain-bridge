@@ -10,6 +10,7 @@ import org.bsc.langgraph4j.serializer.Serializer;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,12 +20,12 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
     @Override
     public void write(Content object, ObjectOutput out) throws IOException {
         if (object instanceof ResourceLinkContent(
-                String name, String uri, String description, String mimeType, Long size, String title,
+                String name, URI uri, String description, String mimeType, Long size, String title,
                 Annotations annotations, JsonElement meta
         )) {
             Serializer.writeUTF("Kind=" + RESOURCE_LINK_KIND, out);
             Serializer.writeUTF(name, out);
-            Serializer.writeUTF(uri, out);
+            Serializer.writeUTF(uri.toString(), out);
             writeResourceLinkString(description, out);
             writeResourceLinkString(mimeType, out);
             out.writeLong(size != null ? size : -1L);
@@ -53,7 +54,7 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
                 String title = readResourceLinkString(in).orElse(null);
                 var annotations = readResourceLinkObject(in, Annotations.class);
                 var meta = readResourceLinkObject(in, JsonElement.class);
-                return new ResourceLinkContent(name, uri, description, mimeType, size, title, annotations, meta);
+                return new ResourceLinkContent(name, URI.create(uri), description, mimeType, size, title, annotations, meta);
             }
         }
 

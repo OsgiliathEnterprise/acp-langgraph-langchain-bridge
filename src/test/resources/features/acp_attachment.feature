@@ -7,12 +7,12 @@ Feature: ACP ResourceLinks Attachment Handling
     Given the ACP bridge is initialized
     And the LangGraph4j adapter is available
     And the graph can access attachment metadata
-    And the test dataset directory exists at "src/test/resources/dataset"
+    And the test dataset directory exists at "src/main/resources/dataset"
 
   # Scenario 1: Basic ResourceLink is passed through the bridge
   Scenario: Bridge accepts and forwards a single ResourceLink with a prompt
     Given I have a prompt "Analyze the attached code file"
-    And I have a ResourceLink pointing to file "src/test/resources/dataset/Thread.java" with name "Thread.java"
+    And I have a ResourceLink pointing to file "src/main/resources/dataset/Thread.java" with name "Thread.java"
     And the ResourceLink has mimeType "text/java"
     When I call the bridge with the prompt and ResourceLink
     Then the adapter receives the ResourceLink
@@ -25,9 +25,9 @@ Feature: ACP ResourceLinks Attachment Handling
     Given I have a prompt "Compare these two Java files"
     And I have ResourceLinks pointing to dataset files:
       | file                                    | name        | mimeType   |
-      | src/test/resources/dataset/Thread.java  | Thread.java | text/java  |
-      | src/test/resources/dataset/String.java  | String.java | text/java  |
-      | src/test/resources/dataset/configuration.json | Array.json | application/json |
+      | src/main/resources/dataset/Thread.java  | Thread.java | text/java  |
+      | src/main/resources/dataset/String.java  | String.java | text/java  |
+      | src/main/resources/dataset/configuration.json | Array.json | application/json |
     When I call the bridge with the prompt and all ResourceLinks
     Then the adapter receives all 3 ResourceLinks
     And the graph state contains all 3 attachment metadata entries
@@ -37,14 +37,14 @@ Feature: ACP ResourceLinks Attachment Handling
   # Scenario 3: ResourceLink with complete metadata
   Scenario: ResourceLink with all metadata fields is preserved in the adapter
     Given I have a prompt "Process the attachment"
-    And I have a ResourceLink pointing to file "src/test/resources/dataset/configuration.json"
+    And I have a ResourceLink pointing to file "src/main/resources/dataset/configuration.json"
     And the ResourceLink has name "prod-config.json"
     And the ResourceLink has description "Production configuration settings"
     And the ResourceLink has mimeType "application/json"
     When I call the bridge with the prompt and ResourceLink
     Then the adapter receives the ResourceLink
     And the ResourceLink name is preserved as "prod-config.json"
-    And the ResourceLink URI points to "src/test/resources/dataset/configuration.json"
+    And the ResourceLink URI points to "src/main/resources/dataset/configuration.json"
     And the ResourceLink description is preserved as "Production configuration settings"
     And the ResourceLink mimeType is preserved as "application/json"
     And the stream processing completes successfully
@@ -118,7 +118,7 @@ Feature: ACP ResourceLinks Attachment Handling
     # Alternative: Use dataset file to simulate archive reference
   Scenario: ResourceLink with archive-like reference to dataset file
     Given I have a prompt "Test archive-like resource reference"
-    And I have a ResourceLink pointing to file "src/test/resources/dataset/Thread.java" with name "Thread.java"
+    And I have a ResourceLink pointing to file "src/main/resources/dataset/Thread.java" with name "Thread.java"
     And the ResourceLink has mimeType "text/java"
     When I call the bridge with the prompt and ResourceLink
     Then the adapter receives the ResourceLink
@@ -195,9 +195,3 @@ Feature: ACP ResourceLinks Attachment Handling
     And the method accepts: List<ContentBlock.ResourceLink> resourceLinks
     And the method accepts: TokenConsumer consumer
     And all parameters are properly forwarded to the adapter
-
-
-
-
-
-

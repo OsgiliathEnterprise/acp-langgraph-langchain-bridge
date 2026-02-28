@@ -13,7 +13,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
  *
  * This runner will:
  * - Execute all .feature files in the 'features' classpath directory
- * - Use step definitions from the 'net.osgiliath.erp.codeprompt.cucumber.steps' package
+ * - Use step definitions from the 'net.osgiliath.acplanggraphlangchainbridge.cucumber.steps' package
  * - Generate pretty console output and JSON reports
  */
 @Suite

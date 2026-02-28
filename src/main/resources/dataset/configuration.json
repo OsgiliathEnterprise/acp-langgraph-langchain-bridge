@@ -1,0 +1,42 @@
+{
+  "applicationName": "ERP System",
+  "version": "2.0.0",
+  "environment": "production",
+  "server": {
+    "host": "localhost",
+    "port": 8080,
+    "protocol": "https",
+    "maxConnections": 100
+  },
+  "database": {
+    "type": "postgresql",
+    "host": "db.example.com",
+    "port": 5432,
+    "name": "erp_production",
+    "connectionPool": {
+      "minSize": 5,
+      "maxSize": 20,
+      "timeout": 30000
+    }
+  },
+  "features": {
+    "enableCache": true,
+    "enableMetrics": true,
+    "enableAuditLog": true,
+    "enableRateLimiting": false
+  },
+  "security": {
+    "authenticationMethod": "oauth2",
+    "tokenExpiration": 3600,
+    "refreshTokenExpiration": 86400,
+    "encryptionAlgorithm": "AES-256"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "destination": "file",
+    "maxFileSize": "100MB",
+    "retentionDays": 30
+  }
+}
+

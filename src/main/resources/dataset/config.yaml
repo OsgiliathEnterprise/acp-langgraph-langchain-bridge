@@ -1,0 +1,79 @@
+# Application Configuration File
+# This YAML file demonstrates configuration management best practices
+
+application:
+  name: ERP System
+  version: 2.0.0
+  description: Enterprise Resource Planning System
+
+server:
+  port: 8080
+  host: 0.0.0.0
+  context-path: /api
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,application/json
+
+spring:
+  profiles:
+    active: production
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/erp
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth.example.com
+          jwk-set-uri: https://auth.example.com/.well-known/jwks.json
+
+logging:
+  level:
+    root: INFO
+    com.example.erp: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+    max-size: 100MB
+    max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+features:
+  cache:
+    enabled: true
+    ttl: 3600
+  rate-limiting:
+    enabled: true
+    max-requests-per-minute: 100
+  audit-log:
+    enabled: true
+    retention-days: 90
+

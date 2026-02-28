@@ -567,7 +567,7 @@ public class ResourceLinkAttachmentSteps {
         ResourceLinkContent actual = stateAttachments.get(0);
 
         assertThat(actual.name()).isEqualTo(expected.getName());
-        assertThat(actual.uri()).isEqualTo(expected.getUri());
+        assertThat(actual.uri().toString()).isEqualTo(expected.getUri());
 
         log.debug("Graph state property '{}' verified to contain ResourceLink", propertyName);
     }
