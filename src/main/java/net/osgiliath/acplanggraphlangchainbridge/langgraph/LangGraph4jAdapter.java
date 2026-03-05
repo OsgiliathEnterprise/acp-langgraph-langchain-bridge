@@ -21,7 +21,7 @@ import java.util.Map;
  *
  * <p>Translates between Koog's protocol layer and LangChain4j's business logic.</p>
  *
- * <h3>Streaming architecture</h3>
+ * Streaming architecture
  * <p>The graph uses the official LangGraph4j streaming pattern:</p>
  * <ol>
  *   <li>The {@code agent} node returns {@code _streaming_messages} with a
