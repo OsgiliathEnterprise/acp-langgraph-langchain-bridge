@@ -157,8 +157,8 @@ publishing {
                 url.set("https://github.com/osgiliath/CodingCrew")
                 licenses {
                     license {
-                        name.set("Apache License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
                         distribution.set("repo")
                     }
                 }
@@ -169,9 +169,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/osgiliath/CodingCrew.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/osgiliath/CodingCrew.git")
-                    url.set("https://github.com/osgiliath/CodingCrew")
+                    connection.set("scm:git:https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
+                    url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
                 }
             }
         }
