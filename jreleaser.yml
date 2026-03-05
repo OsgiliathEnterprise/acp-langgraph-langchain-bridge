@@ -1,0 +1,55 @@
+environment:
+  properties:
+    gitRootSearch: false
+
+project:
+  name: acp-langraph-langchain-bridge
+  version: {{projectVersion}}
+  versionPattern: SEMVER
+  description: Bridge module between ACP and LangGraph/LangChain
+  website: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge
+  authors:
+    - Charlie Mordant
+  license: Apache-2.0
+  inceptionYear: 2025
+  java:
+    groupId: net.osgiliath.ai
+    version: 21
+  links:
+    homepage: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge
+  snapshot:
+    pattern: .*-SNAPSHOT
+
+platform:
+  replacements:
+    aarch_64: aarch64
+
+release:
+  github:
+    enabled: false
+    active: NEVER
+    skipRelease: true
+    skipTag: true
+    overwrite: false
+
+signing:
+  active: ALWAYS
+  armored: true
+
+deploy:
+  maven:
+    mavenCentral:
+      sonatype:
+        active: ALWAYS
+        url: https://s01.oss.sonatype.org/service/local
+        stagingRepository: build/staging-deploy
+        applyMavenCentralRules: true
+        closeRepository: true
+        releaseRepository: true
+        verifyPom: true
+
+
+
+
+
+

@@ -41,16 +41,28 @@ jobs:
       - name: Verify
         run: ./gradlew --no-daemon clean test -PreleaseVersion=${{ steps.version.outputs.release_version }}
 
-      - name: Publish and release staging repository
+      - name: Publish to Maven Central with JReleaser
         env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew --no-daemon \
-            publishToSonatype \
-            closeAndReleaseSonatypeStagingRepository \
+            publishToMavenLocal \
+            jreleaserFullRelease \
             -PreleaseVersion=${{ steps.version.outputs.release_version }}
+
+      - name: Upload JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jreleaser-logs
+          path: |
+            build/jreleaser/trace.log
+            build/jreleaser/output.properties
 

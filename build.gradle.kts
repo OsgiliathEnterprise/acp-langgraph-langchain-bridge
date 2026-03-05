@@ -9,7 +9,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
+    id("org.jreleaser") version "1.15.0"
     kotlin("jvm") version "2.1.10"
 }
 
@@ -147,7 +147,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            groupId = "net.osgiliath"
+            groupId = "net.osgiliath.ai"
             artifactId = "acp-langraph-langchain-bridge"
             version = project.version.toString()
 
@@ -192,14 +192,3 @@ signing {
     }
 }
 
-nexusPublishing {
-    packageGroup.set("net.osgiliath.prompt")
-    repositories {
-        sonatype {
-            username.set(secret("OSSRH_USERNAME"))
-            password.set(secret("OSSRH_PASSWORD"))
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-        }
-    }
-}
