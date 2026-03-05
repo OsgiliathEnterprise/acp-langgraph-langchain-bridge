@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Base64
 
 plugins {
     id("org.springframework.boot") version "3.4.2"
@@ -182,14 +183,20 @@ publishing {
 }
 
 signing {
-    // Use GPG command-line tool (more reliable than in-memory keys)
-    // This requires GPG to be installed and the key to be in the system keyring
+    // Use in-memory PGP keys with environment variables
     val signingKeyId = System.getenv("SIGNING_KEY_ID") ?: project.findProperty("SIGNING_KEY_ID")?.toString()
+    val signingKey = System.getenv("SIGNING_KEY") ?: project.findProperty("SIGNING_KEY")?.toString()
     val signingPassword = System.getenv("SIGNING_PASSWORD") ?: project.findProperty("SIGNING_PASSWORD")?.toString()
 
-    if (!signingKeyId.isNullOrBlank()) {
-        // Use gpg command-line tool with the key ID
-        useGpgCmd()
+    if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
+        // Decode base64 key if it's base64 encoded
+        val decodedKey = try {
+            String(Base64.getDecoder().decode(signingKey))
+        } catch (@Suppress("UNUSED_VARIABLE") e: Exception) {
+            signingKey
+        }
+
+        useInMemoryPgpKeys(signingKeyId, decodedKey, signingPassword)
         sign(publishing.publications["mavenJava"])
     }
 }
