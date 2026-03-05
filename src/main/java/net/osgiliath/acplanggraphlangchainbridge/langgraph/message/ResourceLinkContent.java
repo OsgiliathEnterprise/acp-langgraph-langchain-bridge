@@ -22,14 +22,14 @@ import java.util.Objects;
  * LangChain4j's ContentType enum is closed and cannot be extended. The type() method is
  * primarily informational - the actual content identification happens via instanceof checks.</p>
  *
- * <p>Benefits:
+ * Benefits:
  * <ul>
  *   <li>Native LangChain4j Content type - works with UserMessage.contents()</li>
  *   <li>Serializable - LangChain4j Content types implement Serializable</li>
  *   <li>Multimodal - Can be mixed with TextContent, ImageContent in messages</li>
  *   <li>No casting issues - Graph nodes use instanceof checks, not type casting</li>
  * </ul>
- * </p>
+ *
  */
 public record ResourceLinkContent(String name, URI uri, String description, String mimeType, Long size, String title,
                                   Annotations annotations, JsonElement meta) implements Content {
