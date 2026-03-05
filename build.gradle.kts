@@ -182,12 +182,14 @@ publishing {
 }
 
 signing {
+    // Use GPG command-line tool (more reliable than in-memory keys)
+    // This requires GPG to be installed and the key to be in the system keyring
     val signingKeyId = System.getenv("SIGNING_KEY_ID") ?: project.findProperty("SIGNING_KEY_ID")?.toString()
-    val signingKey = System.getenv("SIGNING_KEY") ?: project.findProperty("SIGNING_KEY")?.toString()
     val signingPassword = System.getenv("SIGNING_PASSWORD") ?: project.findProperty("SIGNING_PASSWORD")?.toString()
 
-    if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
-        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    if (!signingKeyId.isNullOrBlank()) {
+        // Use gpg command-line tool with the key ID
+        useGpgCmd()
         sign(publishing.publications["mavenJava"])
     }
 }

@@ -36,6 +36,8 @@ release:
 signing:
   active: ALWAYS
   armored: true
+  # Use system GPG keyring (more reliable than in-memory keys)
+  verify: true
 
 deploy:
   maven:
