@@ -7,6 +7,7 @@ project:
   version: {{projectVersion}}
   versionPattern: SEMVER
   description: Bridge module between ACP and LangGraph/LangChain
+  copyright: 2025 Charlie Mordant
   website: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge
   authors:
     - Charlie Mordant
@@ -47,6 +48,9 @@ deploy:
         closeRepository: true
         releaseRepository: true
         verifyPom: true
+        # Credentials from environment variables
+        username: ${env.MAVEN_CENTRAL_USERNAME:${env.OSSRH_USERNAME}}
+        password: ${env.MAVEN_CENTRAL_TOKEN:${env.OSSRH_PASSWORD}}
 
 
 

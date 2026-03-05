@@ -157,8 +157,8 @@ publishing {
                 url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
                 licenses {
                     license {
-                        name.set("The Apache License, Version 2.0")
-                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
                         distribution.set("repo")
                     }
                 }
@@ -182,9 +182,9 @@ publishing {
 }
 
 signing {
-    val signingKeyId = secret("SIGNING_KEY_ID")
-    val signingKey = secret("SIGNING_KEY")
-    val signingPassword = secret("SIGNING_PASSWORD")
+    val signingKeyId = System.getenv("SIGNING_KEY_ID") ?: project.findProperty("SIGNING_KEY_ID")?.toString()
+    val signingKey = System.getenv("SIGNING_KEY") ?: project.findProperty("SIGNING_KEY")?.toString()
+    val signingPassword = System.getenv("SIGNING_PASSWORD") ?: project.findProperty("SIGNING_PASSWORD")?.toString()
 
     if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
         useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
