@@ -52,7 +52,7 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./gradlew --no-daemon \
+          ./gradlew --debug --no-daemon \
             publishToMavenLocal \
             jreleaserFullRelease \
             -PreleaseVersion=${{ steps.version.outputs.release_version }}
