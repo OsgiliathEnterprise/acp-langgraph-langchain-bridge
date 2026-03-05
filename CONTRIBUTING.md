@@ -121,5 +121,5 @@ or joined the [Osgiliath team]([https://www.jhipster.tech/team/](https://github.
 - We work on our free time, so we have no obligation nor commitment. Work/life balance is important, so don't
   feel tempted to put in all your free time fixing something.
 
-[issue-template]: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge/issues/new?template=BUG_REPORT.md
-[feature-template]: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge/issues/new?template=FEATURE_REQUEST.md
+[issue-template](https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge/issues/new?template=BUG_REPORT.md)
+[feature-template](https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge/issues/new?template=FEATURE_REQUEST.md)

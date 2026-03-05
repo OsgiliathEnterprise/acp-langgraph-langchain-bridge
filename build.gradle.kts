@@ -8,11 +8,16 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
     `maven-publish`
+    signing
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
     kotlin("jvm") version "2.1.10"
 }
 
+fun Project.secret(name: String): String? =
+    (findProperty(name) as String?) ?: System.getenv(name)
+
 group = "net.osgiliath.prompt"
-version = "1.0-SNAPSHOT"
+version = (findProperty("releaseVersion") as String?) ?: "1.0-SNAPSHOT"
 tasks.withType<Test>().configureEach {
         useJUnitPlatform()
 
@@ -38,6 +43,8 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 // Configure Kotlin to use the same Java toolchain
@@ -135,14 +142,37 @@ tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
     standardInput = System.`in`
 }
 
-// Publishing configuration for local Maven repository
+// Publishing configuration for local Maven repository and Maven Central
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
             groupId = "net.osgiliath.prompt"
             artifactId = "acp-langraph-langchain-bridge"
-            version = "1.0-SNAPSHOT"
+            version = project.version.toString()
+
+            pom {
+                name.set("acp-langraph-langchain-bridge")
+                description.set("Bridge module between ACP and LangGraph/LangChain")
+                url.set("https://github.com/osgiliath/CodingCrew")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("charliemordant")
+                        name.set("Charlie Mordant")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/osgiliath/CodingCrew.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/osgiliath/CodingCrew.git")
+                    url.set("https://github.com/osgiliath/CodingCrew")
+                }
+            }
         }
     }
     repositories {
@@ -150,3 +180,25 @@ publishing {
     }
 }
 
+signing {
+    val signingKeyId = secret("SIGNING_KEY_ID")
+    val signingKey = secret("SIGNING_KEY")
+    val signingPassword = secret("SIGNING_PASSWORD")
+
+    if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
+    }
+}
+
+nexusPublishing {
+    packageGroup.set("net.osgiliath.prompt")
+    repositories {
+        sonatype {
+            username.set(secret("OSSRH_USERNAME"))
+            password.set(secret("OSSRH_PASSWORD"))
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
+}

@@ -1,0 +1,56 @@
+name: Release to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: 'Release version (without v prefix), e.g. 1.2.3'
+        required: true
+
+env:
+  JAVA_VERSION: '21'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Resolve release version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ github.event.inputs.releaseVersion }}"
+          fi
+          echo "release_version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify
+        run: ./gradlew --no-daemon clean test -PreleaseVersion=${{ steps.version.outputs.release_version }}
+
+      - name: Publish and release staging repository
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          ./gradlew --no-daemon \
+            publishToSonatype \
+            closeAndReleaseSonatypeStagingRepository \
+            -PreleaseVersion=${{ steps.version.outputs.release_version }}
+
