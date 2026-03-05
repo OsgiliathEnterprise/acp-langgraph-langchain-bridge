@@ -147,14 +147,14 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            groupId = "net.osgiliath.prompt"
+            groupId = "net.osgiliath"
             artifactId = "acp-langraph-langchain-bridge"
             version = project.version.toString()
 
             pom {
                 name.set("acp-langraph-langchain-bridge")
                 description.set("Bridge module between ACP and LangGraph/LangChain")
-                url.set("https://github.com/osgiliath/CodingCrew")
+                url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
                 licenses {
                     license {
                         name.set("The Apache License, Version 2.0")
