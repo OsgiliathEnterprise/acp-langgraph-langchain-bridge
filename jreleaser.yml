@@ -4,7 +4,6 @@ environment:
 
 project:
   name: acp-langraph-langchain-bridge
-  version: {{projectVersion}}
   versionPattern: SEMVER
   description: Bridge module between ACP and LangGraph/LangChain
   copyright: 2025 Charlie Mordant
@@ -28,7 +27,6 @@ platform:
 release:
   github:
     enabled: false
-    active: NEVER
     skipRelease: true
     skipTag: true
     overwrite: false
@@ -36,26 +34,19 @@ release:
 signing:
   active: ALWAYS
   armored: true
-  # Use system GPG keyring (more reliable than in-memory keys)
-  verify: true
+  verify: false
 
 deploy:
   maven:
     mavenCentral:
       sonatype:
         active: ALWAYS
-        url: https://s01.oss.sonatype.org/service/local
-        stagingRepository: build/staging-deploy
+        url: https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
+#        stagingRepository: build/staging-deploy
         applyMavenCentralRules: true
-        closeRepository: true
-        releaseRepository: true
+#        closeRepository: true
+#        releaseRepository: true
         verifyPom: true
         # Credentials from environment variables
         username: ${env.MAVEN_CENTRAL_USERNAME:${env.OSSRH_USERNAME}}
         password: ${env.MAVEN_CENTRAL_TOKEN:${env.OSSRH_PASSWORD}}
-
-
-
-
-
-

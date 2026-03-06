@@ -8,7 +8,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
     `maven-publish`
-    signing
     id("org.jreleaser") version "1.15.0"
     kotlin("jvm") version "2.1.10"
 }
@@ -17,6 +16,7 @@ fun Project.secret(name: String): String? =
     (findProperty(name) as String?) ?: System.getenv(name)
 
 group = "net.osgiliath.prompt"
+description = "Bridge module between ACP and LangGraph/LangChain"
 version = (findProperty("releaseVersion") as String?) ?: "1.0-SNAPSHOT"
 tasks.withType<Test>().configureEach {
         useJUnitPlatform()
@@ -150,7 +150,6 @@ publishing {
             groupId = "net.osgiliath.ai"
             artifactId = "acp-langraph-langchain-bridge"
             version = project.version.toString()
-
             pom {
                 name.set("acp-langraph-langchain-bridge")
                 description.set("Bridge module between ACP and LangGraph/LangChain")
@@ -177,7 +176,13 @@ publishing {
         }
     }
     repositories {
-        mavenLocal()
+        maven {
+            name = "staging"
+            url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+        }
     }
 }
 
+jreleaser {
+    configFile.set(file("jreleaser.yml"))
+}
