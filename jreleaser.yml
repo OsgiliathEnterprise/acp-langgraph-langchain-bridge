@@ -42,7 +42,8 @@ deploy:
       sonatype:
         active: ALWAYS
         url: https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/
-        stagingDirectories: build/staging-deploy
+        stagingRepositories:
+          - build/staging-deploy
         applyMavenCentralRules: true
 #        closeRepository: true
 #        releaseRepository: true
