@@ -14,7 +14,13 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * Custom ContentSerializer for ACP that handles serialization of ResourceLinkContent.
+ * This serializer writes a type marker to identify ResourceLinkContent during deserialization.
+ * It also handles nullable fields and ensures backward compatibility with existing Content types.
+ */
 public class AcpBridgeContentSerializer extends ContentSerializer {
+
     private static final String RESOURCE_LINK_KIND = "RESOURCE_LINK";
 
     @Override

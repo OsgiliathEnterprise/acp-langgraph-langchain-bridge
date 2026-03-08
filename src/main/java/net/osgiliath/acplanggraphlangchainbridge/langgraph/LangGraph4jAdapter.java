@@ -44,6 +44,11 @@ public class LangGraph4jAdapter {
 
     private final PromptGraph graph;
 
+    /**
+     * Constructor for LangGraph4jAdapter.
+     *
+     * @param graph the PromptGraph instance to use for processing prompts
+     */
     public LangGraph4jAdapter(
                               PromptGraph graph) {
         this.graph = graph;
@@ -57,6 +62,10 @@ public class LangGraph4jAdapter {
      *
      * <p>ResourceLinks are embedded as {@link ResourceLinkContent} in the UserMessage,
      * following LangChain4j's multimodal content pattern.</p>
+     *
+     * @param promptText the prompt text to process
+     * @param resourceLinks the list of ResourceLinks to include in the prompt
+     * @param consumer the consumer to receive the streamed tokens
      */
     public void streamPrompt(String promptText,
                              List<ContentBlock.ResourceLink> resourceLinks,

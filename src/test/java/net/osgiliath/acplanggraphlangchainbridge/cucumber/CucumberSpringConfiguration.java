@@ -2,7 +2,7 @@ package net.osgiliath.acplanggraphlangchainbridge.cucumber;
 
 import com.agentclientprotocol.model.ContentBlock;
 import io.cucumber.spring.CucumberContextConfiguration;
-import net.osgiliath.acplanggraphlangchainbridge.CodePromptFrameworkApplication;
+import net.osgiliath.acplanggraphlangchainbridge.AcpLangGraphLangChainBridgeApplication;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @CucumberContextConfiguration
 @SpringBootTest(
-    classes = CodePromptFrameworkApplication.class,
+    classes = AcpLangGraphLangChainBridgeApplication.class,
     properties = {
         "spring.main.web-application-type=none"
     }

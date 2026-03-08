@@ -29,11 +29,29 @@ import java.util.Objects;
  *   <li>Multimodal - Can be mixed with TextContent, ImageContent in messages</li>
  *   <li>No casting issues - Graph nodes use instanceof checks, not type casting</li>
  * </ul>
- *
+ * @param name the name of the resource
+ * @param uri the URI of the resource
+ * @param description the description of the resource
+ * @param mimeType the MIME type of the resource
+ * @param size the size of the resource
+ * @param title the title of the resource
+ * @param annotations the annotations associated with the resource
+ * @param meta additional metadata associated with the resource
  */
-public record ResourceLinkContent(String name, URI uri, String description, String mimeType, Long size, String title,
+    public record ResourceLinkContent(String name, URI uri, String description, String mimeType, Long size, String title,
                                   Annotations annotations, JsonElement meta) implements Content {
 
+    /**
+     * Constructor for ResourceLinkContent.
+     * @param name the name of the resource
+     * @param uri the URI of the resource
+     * @param description the description of the resource
+     * @param mimeType the MIME type of the resource
+     * @param size the size of the resource
+     * @param title the title of the resource
+     * @param annotations the annotations associated with the resource
+     * @param meta additional metadata for the resource
+     */
     public ResourceLinkContent(String name, URI uri, String description,
                                String mimeType, Long size, String title,
                                Annotations annotations, JsonElement meta) {
@@ -55,6 +73,8 @@ public record ResourceLinkContent(String name, URI uri, String description, Stri
 
     /**
      * Create from ACP ResourceLink.
+     * @param link the ACP ResourceLink to convert
+     * @return the ResourceLinkContent instance
      */
     public static ResourceLinkContent from(ContentBlock.ResourceLink link) {
         if (link == null) {
@@ -74,6 +94,7 @@ public record ResourceLinkContent(String name, URI uri, String description, Stri
 
     /**
      * Convert back to ACP ResourceLink.
+     * @return the original ContentBlock.ResourceLink
      */
     public ContentBlock.ResourceLink toResourceLink() {
         return new ContentBlock.ResourceLink(

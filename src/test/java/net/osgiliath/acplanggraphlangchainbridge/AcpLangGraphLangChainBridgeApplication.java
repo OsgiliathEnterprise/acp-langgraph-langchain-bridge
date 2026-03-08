@@ -9,10 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * Koog ACP Server Frontend + LangChain4j Agent Orchestrator
  */
 @SpringBootApplication(scanBasePackages = "net.osgiliath.acplanggraphlangchainbridge")
-public class CodePromptFrameworkApplication {
+public class AcpLangGraphLangChainBridgeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CodePromptFrameworkApplication.class, args);
+        SpringApplication.run(AcpLangGraphLangChainBridgeApplication.class, args);
     }
 }
 

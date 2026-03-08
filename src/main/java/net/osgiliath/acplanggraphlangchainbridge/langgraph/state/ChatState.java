@@ -13,28 +13,66 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * ChatState is a state class that extends MessagesState with ChatMessage as the message type. It represents the state of a chat conversation, including the messages exchanged and any attachments sent by the user. The state includes channels for storing the chat messages, the metadata of the attachments, and the content of the attachments. This state is used in the context of a chat application where users can send messages and attachments, and it allows for tracking the conversation history and associated files.
+ */
 public class ChatState extends MessagesState<ChatMessage> {
 
+    /**
+     * Channel for attachments metadata. The content of this channel is a list of {@link ResourceLinkContent}, which contains the metadata of the attachments sent by the user.
+     */
     public static final String ATTACHMENTS_META = "attachmentsMeta";
+    /**
+     * Channel for attachments content. The content of this channel is a list of byte arrays, which contains the content of the attachments sent by the user.
+     */
+    public static final String ATTACHMENTS = "attachments";
 
+    /**
+     * State schema for the {@link ChatState}. This defines the channels that are used in the state and their types. The schema is a map where the keys are the channel names and the values are the channel definitions. In this case, we have three channels: MESSAGES_STATE, ATTACHMENTS_META, and ATTACHMENTS. The MESSAGES_STATE channel is defined in the parent class and is used to store the chat messages. The ATTACHMENTS_META channel is used to store the metadata of the attachments sent by the user, and the ATTACHMENTS channel is used to store the content of the attachments sent by the user.
+     */
     public static final Map<String, Channel<?>> SCHEMA = Map.of(
             MESSAGES_STATE, Channels.appender(ArrayList::new),
-            ATTACHMENTS_META, Channels.appender(ArrayList::new)
+            ATTACHMENTS_META, Channels.appender(ArrayList::new),
+            ATTACHMENTS, Channels.appender(ArrayList::new)
     );
 
+    /**
+     * Constructor for the {@link ChatState}. It takes a map of initial data, which is used to initialize the state. The map should contain the initial values for the channels defined in the state schema.
+     * @param initData A map of initial data for the state. The keys should correspond to the channel names defined in the state schema, and the values should be the initial values for those channels.
+     */
     public ChatState(Map<String, Object> initData) {
         super(initData);
     }
 
+    /**
+     * Serializer for the {@link ChatState}. Uses the {@link AcpLangChain4jStateSerializer} with a constructor reference to create new instances of {@link ChatState}.
+     * @return  A ChatState serializer that can be used to serialize and deserialize ChatState instances.
+     */
     public static StateSerializer<ChatState> serializer() {
         return new AcpLangChain4jStateSerializer<>(ChatState::new);
     }
 
+    /**
+     * Gets the next message in the chat. This is used to determine if there are more messages to process in the chat. If there are no more messages, it returns an empty Optional.
+     * @return An Optional containing the next message in the chat, or an empty Optional if there are no more messages to process.
+     */
     public Optional<String> next() {
         return this.value("next");
     }
 
+    /**
+     * Gets the metadata of the attachments sent by the user. This is used to determine if there are any attachments to process in the chat. If there are no attachments, it returns an empty list.
+     * @return A list of ResourceLinkContent containing the metadata of the attachments sent by the user, or an empty list if there are no attachments to process.
+     */
     public List<ResourceLinkContent> attachmentsMetadata() {
         return this.<List<ResourceLinkContent>>value(ATTACHMENTS_META).orElse(List.of());
+    }
+
+    /**
+     * Gets the content of the attachments sent by the user. This is used to determine if there are any attachments to process in the chat. If there are no attachments, it returns an empty list.
+     * @return A list of byte arrays containing the content of the attachments sent by the user, or an empty list if there are no attachments to process.
+     */
+    public List<byte[]> attachments() {
+        return this.<List<byte[]>>value(ATTACHMENTS).orElse(List.of());
     }
 }

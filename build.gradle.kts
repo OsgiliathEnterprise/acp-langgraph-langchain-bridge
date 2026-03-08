@@ -7,17 +7,23 @@ plugins {
     id("idea")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
-    `maven-publish`
     id("org.jreleaser") version "1.15.0"
     kotlin("jvm") version "2.1.10"
+    wrapper
+    id("maven-publish")
 }
 
 fun Project.secret(name: String): String? =
     (findProperty(name) as String?) ?: System.getenv(name)
 
-group = "net.osgiliath.prompt"
+group = "net.osgiliath.ai"
 description = "Bridge module between ACP and LangGraph/LangChain"
 version = (findProperty("releaseVersion") as String?) ?: "1.0-SNAPSHOT"
+tasks.wrapper {
+    gradleVersion = "9.4.0"
+    distributionType = Wrapper.DistributionType.BIN
+}
+
 tasks.withType<Test>().configureEach {
         useJUnitPlatform()
 
@@ -59,10 +65,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         // Ensure compatibility with Java-only dependencies
         freeCompilerArgs.add("-Xjvm-default=all")
     }
-}
-
-springBoot {
-    mainClass.set("net.osgiliath.acplangraphlangchainbridge.CodePromptFrameworkApplication")
 }
 
 configurations.all {
@@ -142,47 +144,13 @@ tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
     standardInput = System.`in`
 }
 
-// Publishing configuration for local Maven repository and Maven Central
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-            groupId = "net.osgiliath.ai"
-            artifactId = "acp-langraph-langchain-bridge"
-            version = project.version.toString()
-            pom {
-                name.set("acp-langraph-langchain-bridge")
-                description.set("Bridge module between ACP and LangGraph/LangChain")
-                url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
-                licenses {
-                    license {
-                        name.set("Apache License, Version 2.0")
-                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
-                        distribution.set("repo")
-                    }
-                }
-                developers {
-                    developer {
-                        id.set("charliemordant")
-                        name.set("Charlie Mordant")
-                    }
-                }
-                scm {
-                    connection.set("scm:git:https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
-                    developerConnection.set("scm:git:ssh://git@github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
-                    url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
-                }
-            }
-        }
-    }
-    repositories {
-        maven {
-            name = "staging"
-            url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
         }
     }
 }
-
 jreleaser {
     configFile.set(file("jreleaser.yml"))
 }

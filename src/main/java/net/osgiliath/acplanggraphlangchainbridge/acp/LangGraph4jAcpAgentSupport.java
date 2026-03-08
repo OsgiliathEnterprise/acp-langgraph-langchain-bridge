@@ -14,10 +14,15 @@ import java.util.concurrent.CompletableFuture;
  * Java implementation of ACP Agent logic using LangChain4j.
  */
 @Component
-public class LangGraph4jAcpAgentSupport implements AcpAgentSupportBridge {
+public class LangGraph4jAcpAgentSupport implements InAcpAdapter {
     private static final Logger log = LoggerFactory.getLogger(LangGraph4jAcpAgentSupport.class);
     private final LangGraph4jAdapter adapter;
 
+    /**
+     * Constructor for LangGraph4jAcpAgentSupport.
+     *
+     * @param adapter the LangGraph4jAdapter instance to use for processing prompts
+     */
     public LangGraph4jAcpAgentSupport(LangGraph4jAdapter adapter) {
         this.adapter = adapter;
     }
