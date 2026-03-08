@@ -140,6 +140,15 @@ tasks.withType<Jar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
+// This module is published as a library, not an executable Spring Boot app.
+tasks.named("bootJar") {
+    enabled = false
+}
+
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+
 tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
     standardInput = System.`in`
 }
