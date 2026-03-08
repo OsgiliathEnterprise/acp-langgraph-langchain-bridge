@@ -157,6 +157,29 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
+            pom {
+                name.set("acp-langraph-langchain-bridge")
+                description.set("Bridge module between ACP and LangGraph/LangChain")
+                url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0")
+                        distribution.set("repo")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("charliemordant")
+                        name.set("Charlie Mordant")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge.git")
+                    url.set("https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge")
+                }
+            }
         }
     }
     repositories {
