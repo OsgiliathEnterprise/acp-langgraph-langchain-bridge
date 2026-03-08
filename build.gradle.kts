@@ -159,6 +159,12 @@ publishing {
             from(components["java"])
         }
     }
+    repositories {
+        maven {
+            name = "staging"
+            url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+        }
+    }
 }
 jreleaser {
     configFile.set(file("jreleaser.yml"))
