@@ -216,9 +216,9 @@ jreleaser {
 
 sonar {
     properties {
-        // Allow CI/env to override Sonar identifiers; keep current values as fallback.
-        property("sonar.projectKey", secret("SONAR_PROJECT_KEY") ?: "acp-langraph-langchain-bridge")
-        property("sonar.projectName", secret("SONAR_PROJECT_NAME") ?: "acp-langraph-langchain-bridge")
+        // Require explicit Sonar coordinates from env/gradle properties to avoid key mismatches.
+        secret("SONAR_PROJECT_KEY")?.let { property("sonar.projectKey", it) }
+        secret("SONAR_PROJECT_NAME")?.let { property("sonar.projectName", it) }
         secret("SONAR_ORGANIZATION")?.let { property("sonar.organization", it) }
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
