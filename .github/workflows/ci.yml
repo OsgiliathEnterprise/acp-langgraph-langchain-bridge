@@ -6,22 +6,24 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     name: Build & Test
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -30,15 +32,20 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build project
-        run: ./gradlew build -x test --stacktrace
+      - name: Verify dependency verification config
+        run: |
+          test -f gradle/verification-metadata.xml
+          grep -E '^org\.gradle\.dependency\.verification=strict$' gradle.properties
 
-      - name: Run tests
-        run: ./gradlew test jacocoTestReport --stacktrace
+      - name: Build project
+        run: ./gradlew --dependency-verification strict build -x test --stacktrace
+
+      - name: Run tests and generate JaCoCo report
+        run: ./gradlew --dependency-verification strict test jacocoTestReport --stacktrace
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: build/test-results/
@@ -46,7 +53,7 @@ jobs:
 
       - name: Upload JaCoCo coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: jacoco-report
           path: build/reports/jacoco/test/jacocoTestReport.xml
@@ -54,14 +61,14 @@ jobs:
 
       - name: Publish test report
         if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040
         with:
           files: build/test-results/**/TEST-*.xml
           check_name: Test Results
 
       - name: Upload test HTML reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports
           path: build/reports/tests/
@@ -115,27 +122,37 @@ jobs:
               body: testSummary
             })
 
+      - name: SonarQube analysis
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: ./gradlew --dependency-verification strict sonar -Dsonar.qualitygate.wait=true --stacktrace
+
       - name: Upload build logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-logs
           path: |
             build/reports/
             .gradle/
           retention-days: 7
-
   code-quality:
     runs-on: ubuntu-latest
     name: Code Quality Checks
     continue-on-error: true
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -145,11 +162,11 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check code style
-        run: ./gradlew check --stacktrace || true
+        run: ./gradlew --dependency-verification strict check --stacktrace || true
 
       - name: Upload code quality reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: code-quality-reports
           path: build/reports/
@@ -159,13 +176,15 @@ jobs:
     runs-on: ubuntu-latest
     name: Dependency Vulnerability Check
     continue-on-error: true
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -175,109 +194,12 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check for dependency vulnerabilities
-        run: ./gradlew dependencyCheckAnalyze --stacktrace || true
+        run: ./gradlew --dependency-verification strict dependencyCheckAnalyze --stacktrace || true
 
       - name: Upload dependency check reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-check-reports
           path: build/reports/dependency-check/
           retention-days: 30
-
-  sonarqube-quality-gate:
-    runs-on: ubuntu-latest
-    name: SonarQube Quality Gate
-    needs: build-and-test
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Download JaCoCo coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          path: build/reports/jacoco/test/
-
-      - name: Resolve Sonar coordinates
-        env:
-          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: |
-          effective_org="$SONAR_ORGANIZATION"
-          effective_key="$SONAR_PROJECT_KEY"
-
-          if [ -z "$effective_org" ]; then
-            effective_org="$GITHUB_REPOSITORY_OWNER"
-          fi
-
-          if [ -z "$effective_key" ]; then
-            effective_key="${GITHUB_REPOSITORY/\//_}"
-          fi
-
-          echo "EFFECTIVE_SONAR_ORGANIZATION=$effective_org" >> "$GITHUB_ENV"
-          echo "EFFECTIVE_SONAR_PROJECT_KEY=$effective_key" >> "$GITHUB_ENV"
-
-      - name: Validate Sonar configuration
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          EFFECTIVE_SONAR_ORGANIZATION: ${{ env.EFFECTIVE_SONAR_ORGANIZATION }}
-          EFFECTIVE_SONAR_PROJECT_KEY: ${{ env.EFFECTIVE_SONAR_PROJECT_KEY }}
-        run: |
-          if [ -z "$SONAR_TOKEN" ]; then
-            echo "SONAR_TOKEN is missing"
-            exit 1
-          fi
-          if [ -z "$SONAR_HOST_URL" ]; then
-            echo "SONAR_HOST_URL is missing"
-            exit 1
-          fi
-          if [ -z "$EFFECTIVE_SONAR_ORGANIZATION" ]; then
-            echo "SONAR_ORGANIZATION is missing and could not be derived"
-            exit 1
-          fi
-          if [ -z "$EFFECTIVE_SONAR_PROJECT_KEY" ]; then
-            echo "SONAR_PROJECT_KEY is missing and could not be derived"
-            exit 1
-          fi
-          case "$SONAR_HOST_URL" in
-            http://*|https://*) ;;
-            *)
-              echo "SONAR_HOST_URL must include scheme, e.g. https://sonarcloud.io"
-              exit 1
-              ;;
-          esac
-
-          if [ "$SONAR_HOST_URL" = "https://sonarcloud.io" ]; then
-            lookup_url="$SONAR_HOST_URL/api/projects/search?organization=$EFFECTIVE_SONAR_ORGANIZATION&projects=$EFFECTIVE_SONAR_PROJECT_KEY"
-            response="$(curl -sS -u "$SONAR_TOKEN:" "$lookup_url")"
-            echo "$response" | grep -q '"key":"'"$EFFECTIVE_SONAR_PROJECT_KEY"'"' || {
-              echo "SonarCloud project not found for organization/project key."
-              echo "organization=$EFFECTIVE_SONAR_ORGANIZATION"
-              echo "projectKey=$EFFECTIVE_SONAR_PROJECT_KEY"
-              exit 1
-            }
-          fi
-
-      - name: Run SonarQube analysis
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          EFFECTIVE_SONAR_ORGANIZATION: ${{ env.EFFECTIVE_SONAR_ORGANIZATION }}
-          EFFECTIVE_SONAR_PROJECT_KEY: ${{ env.EFFECTIVE_SONAR_PROJECT_KEY }}
-        run: ./gradlew sonar -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" -Dsonar.organization="$EFFECTIVE_SONAR_ORGANIZATION" -Dsonar.projectKey="$EFFECTIVE_SONAR_PROJECT_KEY" -Dsonar.qualitygate.wait=true --stacktrace
