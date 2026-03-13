@@ -72,8 +72,8 @@ configurations.all {
     resolutionStrategy {
         force("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
         force("org.jetbrains.kotlin:kotlin-stdlib-common:2.1.10")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2")
         // Force JUnit Platform 5.14.2 to match Cucumber 7.34.2 requirements
         force("org.junit.platform:junit-platform-engine:1.14.2")
         force("org.junit.platform:junit-platform-commons:1.14.2")
@@ -99,8 +99,8 @@ dependencies {
     // Kotlin stdlib (required by ACP SDK)
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-common:2.1.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2")
 
     // LangChain4j Backend (Agent Orchestrator)
     implementation("dev.langchain4j:langchain4j")
