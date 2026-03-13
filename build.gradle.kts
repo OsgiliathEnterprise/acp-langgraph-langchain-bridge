@@ -216,9 +216,9 @@ jreleaser {
 
 sonar {
     properties {
-        // Use stable defaults; host/token are injected in CI via env/secrets.
-        property("sonar.projectKey", "acp-langraph-langchain-bridge")
-        property("sonar.projectName", "acp-langraph-langchain-bridge")
+        // Allow CI/env to override Sonar identifiers; keep current values as fallback.
+        property("sonar.projectKey", secret("SONAR_PROJECT_KEY") ?: "acp-langraph-langchain-bridge")
+        property("sonar.projectName", secret("SONAR_PROJECT_NAME") ?: "acp-langraph-langchain-bridge")
         secret("SONAR_ORGANIZATION")?.let { property("sonar.organization", it) }
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
