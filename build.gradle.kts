@@ -108,7 +108,7 @@ configurations.all {
 }
 
 dependencies {
-    "implementation"(platform("io.cucumber:cucumber-bom:7.34.2"))
+    "implementation"(platform("io.cucumber:cucumber-bom:7.34.3"))
     "implementation"(platform("org.bsc.langgraph4j:langgraph4j-bom:1.8.3"))
     "implementation"(platform("dev.langchain4j:langchain4j-bom:1.11.0"))
 
