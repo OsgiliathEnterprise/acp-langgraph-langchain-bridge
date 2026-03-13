@@ -212,6 +212,10 @@ jobs:
         with:
           name: jacoco-report
           path: build/reports/jacoco/test/
+
+      - name: Compile classes for Sonar
+        run: ./gradlew classes testClasses --stacktrace
+
       - name: Run SonarQube analysis
         env:
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}

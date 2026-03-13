@@ -225,5 +225,13 @@ sonar {
             "sonar.coverage.jacoco.xmlReportPaths",
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
         )
+        property(
+            "sonar.java.binaries",
+            "${layout.buildDirectory.get()}/classes/java/main,${layout.buildDirectory.get()}/classes/kotlin/main"
+        )
+        property(
+            "sonar.java.test.binaries",
+            "${layout.buildDirectory.get()}/classes/java/test,${layout.buildDirectory.get()}/classes/kotlin/test"
+        )
     }
 }
