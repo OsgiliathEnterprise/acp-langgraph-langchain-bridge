@@ -8,10 +8,11 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
     id("org.jreleaser") version "1.15.0"
-    id("org.sonarqube") version "6.0.1.5171"
+    id("org.sonarqube") version "7.2.3.7755"
     kotlin("jvm") version "2.1.10"
     wrapper
     id("maven-publish")
+    jacoco
 }
 
 fun Project.secret(name: String): String? =
@@ -25,21 +26,40 @@ tasks.wrapper {
     distributionType = Wrapper.DistributionType.BIN
 }
 
+configure<JacocoPluginExtension> {
+    toolVersion = "0.8.12"
+}
+
 tasks.withType<Test>().configureEach {
-        useJUnitPlatform()
-
-        // Add detailed test logging for debugging
-        testLogging {
-            events("passed", "skipped", "failed", "standardOut", "standardError")
-            exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-            showExceptions = true
-            showCauses = true
-            showStackTraces = true
-        }
-
-        // Enable debug output
-        systemProperty("java.util.logging.config.file", "")
+    // Attach JaCoCo agent to every test task
+    configure<JacocoTaskExtension> {
+        isEnabled = true
     }
+    finalizedBy(tasks.named("jacocoTestReport"))
+
+    useJUnitPlatform()
+
+    // Add detailed test logging for debugging
+    testLogging {
+        events("passed", "skipped", "failed", "standardOut", "standardError")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showExceptions = true
+        showCauses = true
+        showStackTraces = true
+    }
+
+    // Enable debug output
+    systemProperty("java.util.logging.config.file", "")
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.withType<Test>())
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
 // Override Spring Boot's JUnit version to match Cucumber 7.34.2 requirements
 ext {
     set("junit-jupiter.version", "5.14.2")
@@ -199,5 +219,9 @@ sonar {
         // Use stable defaults; host/token are injected in CI via env/secrets.
         property("sonar.projectKey", "acp-langraph-langchain-bridge")
         property("sonar.projectName", "acp-langraph-langchain-bridge")
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+        )
     }
 }
