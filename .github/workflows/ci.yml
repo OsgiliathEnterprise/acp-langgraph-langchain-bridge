@@ -189,6 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     name: SonarQube Quality Gate
     needs: build-and-test
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
 
     steps:
       - name: Checkout code
@@ -211,6 +212,9 @@ jobs:
         with:
           name: jacoco-report
           path: build/reports/jacoco/test/
+
+      - name: Compile classes for SonarJava
+        run: ./gradlew classes testClasses --stacktrace
 
       - name: Run SonarQube analysis
         env:
