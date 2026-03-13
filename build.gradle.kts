@@ -9,6 +9,7 @@ plugins {
     `java-library`
     id("org.jreleaser") version "1.15.0"
     id("org.sonarqube") version "7.2.3.7755"
+    id("org.owasp.dependencycheck") version "12.1.0"
     kotlin("jvm") version "2.1.10"
     wrapper
     id("maven-publish")
