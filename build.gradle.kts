@@ -8,6 +8,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
     `java-library`
     id("org.jreleaser") version "1.15.0"
+    id("org.sonarqube") version "5.1.0.4882"
     kotlin("jvm") version "2.1.10"
     wrapper
     id("maven-publish")
@@ -191,4 +192,12 @@ publishing {
 }
 jreleaser {
     configFile.set(file("jreleaser.yml"))
+}
+
+sonar {
+    properties {
+        // Use stable defaults; host/token are injected in CI via env/secrets.
+        property("sonar.projectKey", "acp-langraph-langchain-bridge")
+        property("sonar.projectName", "acp-langraph-langchain-bridge")
+    }
 }

@@ -197,4 +197,4 @@ jobs:
       - name: Run SonarQube analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew sonarqube -Dsonar.qualitygate.wait=true --stacktrace
+        run: ./gradlew sonar -Dsonar.qualitygate.wait=true --stacktrace
