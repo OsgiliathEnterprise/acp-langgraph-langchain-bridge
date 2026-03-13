@@ -216,11 +216,12 @@ jreleaser {
 
 sonar {
     properties {
-        // Require explicit Sonar coordinates from env/gradle properties to avoid key mismatches.
-        secret("SONAR_PROJECT_KEY")?.let { property("sonar.projectKey", it) }
-        secret("SONAR_PROJECT_NAME")?.let { property("sonar.projectName", it) }
+        // All values injected from env vars / Gradle properties set in CI secrets.
+        secret("SONAR_HOST_URL")?.let    { property("sonar.host.url",    it) }
+        secret("SONAR_TOKEN")?.let       { property("sonar.token",       it) }
         secret("SONAR_ORGANIZATION")?.let { property("sonar.organization", it) }
-        secret("SONAR_TOKEN")?.let { property("sonar.token", it) }
+        secret("SONAR_PROJECT_KEY")?.let { property("sonar.projectKey",  it) }
+        secret("SONAR_PROJECT_NAME")?.let { property("sonar.projectName", it) }
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"

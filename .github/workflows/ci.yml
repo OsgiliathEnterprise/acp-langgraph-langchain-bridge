@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -33,7 +35,7 @@ jobs:
       - name: Build project
         run: ./gradlew build -x test --stacktrace
 
-      - name: Run tests
+      - name: Run tests and generate JaCoCo report
         run: ./gradlew test jacocoTestReport --stacktrace
 
       - name: Upload test results
@@ -115,6 +117,15 @@ jobs:
               body: testSummary
             })
 
+      - name: SonarQube analysis
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: ./gradlew sonar -Dsonar.qualitygate.wait=true --stacktrace
+
       - name: Upload build logs on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -124,7 +135,6 @@ jobs:
             build/reports/
             .gradle/
           retention-days: 7
-
   code-quality:
     runs-on: ubuntu-latest
     name: Code Quality Checks
@@ -185,41 +195,4 @@ jobs:
           path: build/reports/dependency-check/
           retention-days: 30
 
-  sonarqube-quality-gate:
-    runs-on: ubuntu-latest
-    name: SonarQube Quality Gate
-    needs: build-and-test
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Download JaCoCo coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report
-          path: build/reports/jacoco/test/
-
-      - name: Compile classes for Sonar
-        run: ./gradlew classes testClasses --stacktrace
-
-      - name: Run SonarQube analysis
-        env:
-          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew sonar -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" -Dsonar.organization="$SONAR_ORGANIZATION" -Dsonar.projectKey="$SONAR_PROJECT_KEY" -Dsonar.qualitygate.wait=true --stacktrace
