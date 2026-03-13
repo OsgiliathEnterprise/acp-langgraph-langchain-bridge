@@ -6,15 +6,15 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     name: Build & Test
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -32,11 +32,16 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Verify dependency verification config
+        run: |
+          test -f gradle/verification-metadata.xml
+          grep -E '^org\.gradle\.dependency\.verification=strict$' gradle.properties
+
       - name: Build project
-        run: ./gradlew build -x test --stacktrace
+        run: ./gradlew --dependency-verification strict build -x test --stacktrace
 
       - name: Run tests and generate JaCoCo report
-        run: ./gradlew test jacocoTestReport --stacktrace
+        run: ./gradlew --dependency-verification strict test jacocoTestReport --stacktrace
 
       - name: Upload test results
         if: always()
@@ -124,7 +129,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: ./gradlew sonar -Dsonar.qualitygate.wait=true --stacktrace
+        run: ./gradlew --dependency-verification strict sonar -Dsonar.qualitygate.wait=true --stacktrace
 
       - name: Upload build logs on failure
         if: failure()
@@ -139,6 +144,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Code Quality Checks
     continue-on-error: true
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -155,7 +162,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check code style
-        run: ./gradlew check --stacktrace || true
+        run: ./gradlew --dependency-verification strict check --stacktrace || true
 
       - name: Upload code quality reports
         if: always()
@@ -169,6 +176,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Dependency Vulnerability Check
     continue-on-error: true
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -185,7 +194,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check for dependency vulnerabilities
-        run: ./gradlew dependencyCheckAnalyze --stacktrace || true
+        run: ./gradlew --dependency-verification strict dependencyCheckAnalyze --stacktrace || true
 
       - name: Upload dependency check reports
         if: always()
@@ -194,5 +203,3 @@ jobs:
           name: dependency-check-reports
           path: build/reports/dependency-check/
           retention-days: 30
-
-
