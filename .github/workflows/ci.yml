@@ -220,6 +220,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
         run: |
           if [ -z "$SONAR_TOKEN" ]; then
             echo "SONAR_TOKEN is missing"
@@ -227,6 +228,10 @@ jobs:
           fi
           if [ -z "$SONAR_HOST_URL" ]; then
             echo "SONAR_HOST_URL is missing"
+            exit 1
+          fi
+          if [ -z "$SONAR_ORGANIZATION" ]; then
+            echo "SONAR_ORGANIZATION is missing"
             exit 1
           fi
           case "$SONAR_HOST_URL" in
@@ -241,4 +246,5 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        run: ./gradlew sonar -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" -Dsonar.qualitygate.wait=true --stacktrace
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+        run: ./gradlew sonar -Dsonar.host.url="$SONAR_HOST_URL" -Dsonar.token="$SONAR_TOKEN" -Dsonar.organization="$SONAR_ORGANIZATION" -Dsonar.qualitygate.wait=true --stacktrace
