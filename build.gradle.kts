@@ -5,7 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
     id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
     id("idea")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.10"
     `java-library`
     id("org.jreleaser") version "1.15.0"
     id("org.sonarqube") version "7.2.3.7755"
