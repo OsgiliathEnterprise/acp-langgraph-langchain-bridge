@@ -220,6 +220,7 @@ sonar {
         secret("SONAR_PROJECT_KEY")?.let { property("sonar.projectKey", it) }
         secret("SONAR_PROJECT_NAME")?.let { property("sonar.projectName", it) }
         secret("SONAR_ORGANIZATION")?.let { property("sonar.organization", it) }
+        secret("SONAR_TOKEN")?.let { property("sonar.token", it) }
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
