@@ -108,7 +108,7 @@ configurations.all {
 }
 
 dependencies {
-    "implementation"(platform("io.cucumber:cucumber-bom:7.34.2"))
+    "implementation"(platform("io.cucumber:cucumber-bom:7.34.3"))
     "implementation"(platform("org.bsc.langgraph4j:langgraph4j-bom:1.8.3"))
     "implementation"(platform("dev.langchain4j:langchain4j-bom:1.11.0"))
 
@@ -219,6 +219,7 @@ sonar {
         // Use stable defaults; host/token are injected in CI via env/secrets.
         property("sonar.projectKey", "acp-langraph-langchain-bridge")
         property("sonar.projectName", "acp-langraph-langchain-bridge")
+        secret("SONAR_ORGANIZATION")?.let { property("sonar.organization", it) }
         property(
             "sonar.coverage.jacoco.xmlReportPaths",
             "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
