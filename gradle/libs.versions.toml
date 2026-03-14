@@ -2,7 +2,7 @@
 springBoot = "3.4.2"
 springDependencyManagement = "1.1.6"
 ideaExt = "1.1.9"
-kotlin = "2.1.10"
+kotlin = "2.2.20"
 jreleaser = "1.15.0"
 sonarqube = "7.2.3.7755"
 dependencycheck = "12.2.0"
@@ -12,8 +12,9 @@ langgraph4jBom = "1.8.3"
 langchain4jBom = "1.11.0"
 kotlinxCoroutines = "1.9.0"
 junitJupiter = "5.14.2"
-awaitility = "4.2.2"
+awaitility = "4.3.0"
 jacoco = "0.8.12"
+junitPlatform = "1.14.2"
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
@@ -52,8 +53,8 @@ springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter
 junitBom = { module = "org.junit:junit-bom", version.ref = "junitJupiter" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 junitJupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
-junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.2" }
-junitPlatformSuite = { module = "org.junit.platform:junit-platform-suite", version = "1.14.2" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
+junitPlatformSuite = { module = "org.junit.platform:junit-platform-suite", version.ref = "junitPlatform" }
 
 awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 

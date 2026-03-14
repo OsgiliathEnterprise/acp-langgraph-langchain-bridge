@@ -95,20 +95,14 @@ configurations.all {
     val junitVersion = libs.versions.junitJupiter.get()
 
     resolutionStrategy {
-        force("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-        force("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion")
+        force(libs.kotlinStdlib)
+        force(libs.kotlinStdlibCommon)
+        force(libs.kotlinxCoroutinesCore)
+        force(libs.kotlinxCoroutinesCoreJvm)
         // Force JUnit Platform to match Cucumber requirements
-        force("org.junit.platform:junit-platform-engine:1.14.2")
-        force("org.junit.platform:junit-platform-commons:1.14.2")
-        force("org.junit.platform:junit-platform-suite:1.14.2")
-        force("org.junit.platform:junit-platform-suite-api:1.14.2")
-        force("org.junit.platform:junit-platform-suite-engine:1.14.2")
-        force("org.junit.platform:junit-platform-launcher:1.14.2")
-        force("org.junit.jupiter:junit-jupiter:$junitVersion")
-        force("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-        force("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+        force(libs.junitPlatformSuite)
+        force(libs.junitPlatformLauncher)
+        force(libs.junitJupiter)
     }
 }
 

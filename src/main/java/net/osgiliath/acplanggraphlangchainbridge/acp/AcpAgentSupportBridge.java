@@ -25,6 +25,7 @@ public interface AcpAgentSupportBridge {
      *                  and should be included in all subsequent calls related to this session
      * @param cwd the current working directory for the session, which can be used by the agent to resolve file paths and manage resources in a context-aware manner
      * @param mcpServers a map of MCP server identifiers to their corresponding URLs, which the agent can use to route tool execution requests and manage interactions with external services as needed
+     * @return AcpSessionBridge instance representing the active session for the agent.
      */
     AcpSessionBridge createSession(String sessionId, String cwd, Map<String, String> mcpServers);
 
