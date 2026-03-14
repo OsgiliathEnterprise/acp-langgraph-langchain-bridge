@@ -5,6 +5,8 @@ import com.agentclientprotocol.model.ContentBlock;
 import dev.langchain4j.data.message.Content;
 import dev.langchain4j.data.message.ContentType;
 import kotlinx.serialization.json.JsonElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -40,7 +42,7 @@ import java.util.Objects;
  */
     public record ResourceLinkContent(String name, URI uri, String description, String mimeType, Long size, String title,
                                   Annotations annotations, JsonElement meta) implements Content {
-
+        private static final Logger logger = LoggerFactory.getLogger(ResourceLinkContent.class);
     /**
      * Constructor for ResourceLinkContent.
      * @param name the name of the resource
@@ -62,7 +64,7 @@ import java.util.Objects;
         try {
             mime = mimeType != null ? mimeType : Files.probeContentType(java.nio.file.Paths.get(uri));
         } catch (IOException e) {
-
+            logger.warn("Failed to determine MIME type for resource at URI {}: {}", uri, e.getMessage());
         }
         this.mimeType = mime;
         this.size = size;

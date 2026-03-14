@@ -49,6 +49,8 @@ jobs:
           JRELEASER_GPG_SECRET_KEY: ${{ secrets.SIGNING_KEY }}
           JRELEASER_GPG_PASSPHRASE: ${{ secrets.SIGNING_PASSWORD }}
           JRELEASER_PROJECT_VERSION: ${{ steps.version.outputs.project_version }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
         run: |
           ./gradlew --no-daemon jreleaserRelease \
             -Pjreleaser.draft=true \

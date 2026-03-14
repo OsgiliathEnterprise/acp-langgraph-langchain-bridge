@@ -281,7 +281,7 @@ public class ResourceLinkAttachmentSteps {
     @Then("the adapter receives the ResourceLink")
     public void adapterReceivesResourceLink() {
         assertThat(lastError.get()).isNull();
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         log.info("Adapter received {} ResourceLink(s)", currentResourceLinks.size());
     }
 
