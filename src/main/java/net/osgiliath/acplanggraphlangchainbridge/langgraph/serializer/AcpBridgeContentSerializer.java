@@ -22,14 +22,14 @@ import java.util.Optional;
 public class AcpBridgeContentSerializer extends ContentSerializer {
 
     private static final String RESOURCE_LINK_KIND = "RESOURCE_LINK";
-
+    private static final String SERIALIZER_PREFIX = "Kind=";
     @Override
     public void write(Content object, ObjectOutput out) throws IOException {
         if (object instanceof ResourceLinkContent(
                 String name, URI uri, String description, String mimeType, Long size, String title,
                 Annotations annotations, JsonElement meta
         )) {
-            Serializer.writeUTF("Kind=" + RESOURCE_LINK_KIND, out);
+            Serializer.writeUTF(SERIALIZER_PREFIX + RESOURCE_LINK_KIND, out);
             Serializer.writeUTF(name, out);
             Serializer.writeUTF(uri.toString(), out);
             writeResourceLinkString(description, out);
@@ -48,8 +48,8 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
         // Peek at the first value to determine the type
         var firstValue = Serializer.readUTF(in);
 
-        if (firstValue.startsWith("Kind=")) {
-            String kind = firstValue.substring("Kind=".length());
+        if (firstValue.startsWith(SERIALIZER_PREFIX)) {
+            String kind = firstValue.substring(SERIALIZER_PREFIX.length());
             if (RESOURCE_LINK_KIND.equals(kind)) {
                 String name = Serializer.readUTF(in);
                 String uri = Serializer.readUTF(in);

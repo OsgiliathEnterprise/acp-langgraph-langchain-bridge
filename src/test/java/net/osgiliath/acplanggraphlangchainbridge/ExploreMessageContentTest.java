@@ -20,7 +20,7 @@ import java.util.List;
 public class ExploreMessageContentTest {
 
     @Test
-    public void exploreContentTypes() {
+    void exploreContentTypes() {
         System.out.println("=== Exploring LangChain4j Message Content System ===");
 
         // Test if Content interface/class exists
@@ -48,7 +48,7 @@ public class ExploreMessageContentTest {
     }
 
     @Test
-    public void checkContentSerializable() {
+    void checkContentSerializable() {
         // Create content and try to serialize
         TextContent content = TextContent.from("test");
 
