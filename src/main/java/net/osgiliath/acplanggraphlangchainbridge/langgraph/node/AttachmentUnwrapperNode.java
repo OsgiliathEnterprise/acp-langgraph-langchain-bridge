@@ -49,7 +49,7 @@ public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
             attachments.add(read);
         }
         return Map.of(
-                ChatState.ATTACHMENTS, attachments
+                ChatState.ATTACHMENTS_SCHEMA, attachments
         );
     }
 }

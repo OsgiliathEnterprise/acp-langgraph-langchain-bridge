@@ -25,7 +25,7 @@ public class ChatState extends MessagesState<ChatMessage> {
     /**
      * Channel for attachments content. The content of this channel is a list of byte arrays, which contains the content of the attachments sent by the user.
      */
-    public static final String ATTACHMENTS = "attachments";
+    public static final String ATTACHMENTS_SCHEMA = "attachments";
 
     /**
      * State schema for the {@link ChatState}. This defines the channels that are used in the state and their types. The schema is a map where the keys are the channel names and the values are the channel definitions. In this case, we have three channels: MESSAGES_STATE, ATTACHMENTS_META, and ATTACHMENTS. The MESSAGES_STATE channel is defined in the parent class and is used to store the chat messages. The ATTACHMENTS_META channel is used to store the metadata of the attachments sent by the user, and the ATTACHMENTS channel is used to store the content of the attachments sent by the user.
@@ -33,7 +33,7 @@ public class ChatState extends MessagesState<ChatMessage> {
     public static final Map<String, Channel<?>> SCHEMA = Map.of(
             MESSAGES_STATE, Channels.appender(ArrayList::new),
             ATTACHMENTS_META, Channels.appender(ArrayList::new),
-            ATTACHMENTS, Channels.appender(ArrayList::new)
+            ATTACHMENTS_SCHEMA, Channels.appender(ArrayList::new)
     );
 
     /**
@@ -73,6 +73,6 @@ public class ChatState extends MessagesState<ChatMessage> {
      * @return A list of byte arrays containing the content of the attachments sent by the user, or an empty list if there are no attachments to process.
      */
     public List<byte[]> attachments() {
-        return this.<List<byte[]>>value(ATTACHMENTS).orElse(List.of());
+        return this.<List<byte[]>>value(ATTACHMENTS_SCHEMA).orElse(List.of());
     }
 }
