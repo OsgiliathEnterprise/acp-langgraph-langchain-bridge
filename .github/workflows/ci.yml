@@ -204,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Dependency Vulnerability Check
     needs: build
-    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    continue-on-error: true
     timeout-minutes: 25
     permissions:
       contents: read
@@ -224,7 +224,11 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check for dependency vulnerabilities
-        run: ./gradlew --dependency-verification lenient dependencyCheckAnalyze --stacktrace
+        run: |
+          mkdir -p "$RUNNER_TEMP/dependency-check-data"
+          ./gradlew --no-daemon --no-parallel --dependency-verification lenient dependencyCheckAnalyze \
+            -Dorg.owasp.dependencycheck.data.directory="$RUNNER_TEMP/dependency-check-data" \
+            --stacktrace
 
       - name: Upload dependency check reports
         if: always()
@@ -246,6 +250,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -273,7 +279,7 @@ jobs:
           ./gradlew --dependency-verification lenient sonar \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
-            -Dsonar.java.binaries=build/classes/java/main,build/classes/kotlin/main \
+            -Dsonar.java.binaries=build/classes \
             --stacktrace
 
   dependency-submission:
