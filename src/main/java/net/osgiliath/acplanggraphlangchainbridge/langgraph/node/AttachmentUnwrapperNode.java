@@ -35,6 +35,12 @@ public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
 
     private static final Logger log = LoggerFactory.getLogger(AttachmentUnwrapperNode.class);
 
+    /**
+     * Processes the attachment metadata from the given chat state, reads the corresponding files, and returns a map containing the byte content of the attachments
+     * @param state the current chat state containing messages and attachment metadata
+     * @return a map with the key {@code ChatState.ATTACHMENTS_SCHEMA} mapping to a list of byte arrays representing the content of the attachments
+     * @throws IOException if there is an error reading any of the attachment files
+     */
     @Override
     public Map<String, Object> apply(ChatState state) throws IOException {
         log.debug("Filtering metadata for question: {}, with attachments: {}", state.messages(), state.attachmentsMetadata());
