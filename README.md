@@ -121,40 +121,109 @@ ACP Client ◄──PromptResponse────AcpAgentRunner
 | **LangGraph4j** | 1.8.3 | Stateful agent graph orchestration |
 | **OpenAI (via LangChain4j)** | — | Default LLM provider |
 
-## Building
+## Useful Commands
+
+Run commands from the module root:
 
 ```bash
-./gradlew build
+cd /Users/charliemordant/Code/Sources/CodingCrew/acp-langraph-langchain-bridge
 ```
 
-## Running
-
-The application communicates over **stdio** (stdin/stdout), which is the transport expected by ACP clients.
+### Build / Test
 
 ```bash
-./gradlew bootRun
+./gradlew clean build --stacktrace
+./gradlew test --stacktrace
 ```
 
-Or run the fat JAR directly:
+### JaCoCo Coverage
+
+```bash
+./gradlew test jacocoTestReport --stacktrace
+```
+
+### Dependency Verification (Checksums/Metadata)
+
+Refresh metadata after dependency/plugin changes (lenient), then validate strict mode:
+
+```bash
+./gradlew --refresh-dependencies --dependency-verification lenient --write-verification-metadata sha256 help
+./gradlew --dependency-verification strict build -x test --stacktrace
+```
+
+If strict mode fails after updates, resolve full CI classpaths and retry:
+
+```bash
+./gradlew --refresh-dependencies --dependency-verification lenient --write-verification-metadata sha256 \
+  build test jacocoTestReport check dependencyCheckAnalyze sonar \
+  -Dsonar.qualitygate.wait=false \
+  -Dsonar.host.url=https://sonarcloud.io \
+  -Dsonar.token=dummy \
+  -Dsonar.organization=dummy \
+  -Dsonar.projectKey=dummy
+./gradlew --dependency-verification strict test --stacktrace
+```
+
+### SonarQube / SonarCloud Analysis
+
+Set coordinates and token:
+
+```bash
+export SONAR_HOST_URL="https://sonarcloud.io"
+export SONAR_TOKEN="<token>"
+export SONAR_ORGANIZATION="<organization-key>"
+export SONAR_PROJECT_KEY="<project-key>"
+```
+
+Run analysis and wait for quality gate:
+
+```bash
+./gradlew sonar -Dsonar.qualitygate.wait=true --stacktrace
+```
+
+### Dependency Vulnerability Scan
+
+```bash
+./gradlew dependencyCheckAnalyze --stacktrace
+```
+
+### Run Bridge Over STDIO
+
+```bash
+./gradlew bootRun --stacktrace
+```
+
+Or run packaged artifact:
 
 ```bash
 java -jar build/libs/acp-langraph-langchain-bridge-1.0-SNAPSHOT.jar
 ```
 
-> **Note:** All log output is directed to **stderr** (see `logback.xml`) so that stdout remains clean for ACP JSON-RPC messages.
-
-## Testing
-
-The project uses **Cucumber / Gherkin** BDD tests to validate the bridge behaviour:
+### Publish
 
 ```bash
-./gradlew test
+./gradlew publishToMavenLocal --stacktrace
+./gradlew clean build publishToMavenLocal --stacktrace
 ```
 
-Feature files are located in `src/test/resources/features/`:
+### CI-like Local Validation
 
-- **`acp-agent-support-bridge.feature`** – Validates session lifecycle, prompt handling, resource listing, and ping/pong.
-- **`acp_streaming.feature`** – Validates token-by-token streaming, sequential ordering, and completion signalling.
+```bash
+./gradlew --dependency-verification strict clean build test jacocoTestReport --stacktrace
+./gradlew --dependency-verification strict dependencyCheckAnalyze --stacktrace
+./gradlew --dependency-verification strict sonar -Dsonar.qualitygate.wait=true --stacktrace
+```
+
+## Troubleshooting
+
+- `DependencyVerificationException`: refresh metadata in lenient mode, then rerun strict mode.
+- `Task 'dependencyCheckAnalyze' not found`: ensure OWASP dependency-check plugin is applied.
+- Sonar project errors: confirm `SONAR_ORGANIZATION` and `SONAR_PROJECT_KEY` match SonarCloud settings.
+- `sonarResolver` URL errors: verify `SONAR_HOST_URL` includes scheme (`https://...`).
+
+## Notes
+
+All log output is directed to **stderr** (see `logback.xml`) so stdout remains clean for ACP JSON-RPC messages.
 
 ## Extending
 
@@ -169,10 +238,3 @@ public class MyGraph implements PromptGraph {
     }
 }
 ```
-
-## Build
-
-```bash
-./gradlew clean build publishToMavenLocal
-```
-
