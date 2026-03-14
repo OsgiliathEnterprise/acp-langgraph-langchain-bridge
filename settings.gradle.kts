@@ -1,8 +1,8 @@
 pluginManagement {
     repositories {
         mavenCentral()
-        maven("https://repo.spring.io/release")
         gradlePluginPortal()
+        maven("https://repo.spring.io/release")
     }
 }
 
