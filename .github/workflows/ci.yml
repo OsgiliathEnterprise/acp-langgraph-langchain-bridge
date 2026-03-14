@@ -312,9 +312,19 @@ jobs:
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
         run: |
-          BINARIES=$(find build -type f -name '*.class' -print 2>/dev/null | sed 's#/[^/]*$##' | sort -u | paste -sd, -)
+          BINARIES=""
+          for d in build/classes/java/main build/classes/kotlin/main build/classes/main; do
+            if [ -d "$d" ]; then
+              if [ -z "$BINARIES" ]; then
+                BINARIES="$d"
+              else
+                BINARIES="$BINARIES,$d"
+              fi
+            fi
+          done
+
           if [ -z "$BINARIES" ]; then
-            echo "No compiled .class files found under build/."
+            echo "No main class directories found under build/classes."
             exit 1
           fi
 
