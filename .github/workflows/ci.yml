@@ -291,11 +291,19 @@ jobs:
           name: build-folder-tested
           path: .
 
-      - name: Download Sonar inputs
-        uses: actions/download-artifact@v4
-        with:
-          name: sonar-inputs
-          path: .
+      - name: Normalize transited build layout
+        run: |
+          if [ ! -d build ] && { [ -d classes ] || [ -d reports ] || [ -d tmp ]; }; then
+            mkdir -p build
+            [ -d classes ] && mv classes build/
+            [ -d reports ] && mv reports build/
+            [ -d tmp ] && mv tmp build/
+          fi
+
+          # Safety net: if transit did not include compiled outputs, rebuild just classes.
+          if [ ! -d build/classes ]; then
+            ./gradlew --dependency-verification lenient classes --stacktrace
+          fi
 
       - name: SonarQube analysis
         env:
@@ -304,10 +312,16 @@ jobs:
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
         run: |
+          BINARIES=$(find build -type f -name '*.class' -print 2>/dev/null | sed 's#/[^/]*$##' | sort -u | paste -sd, -)
+          if [ -z "$BINARIES" ]; then
+            echo "No compiled .class files found under build/."
+            exit 1
+          fi
+
           ./gradlew --dependency-verification lenient sonar \
             -Dsonar.qualitygate.wait=true \
             -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
-            -Dsonar.java.binaries=build/classes \
+            -Dsonar.java.binaries="$BINARIES" \
             --stacktrace
 
   dependency-submission:
