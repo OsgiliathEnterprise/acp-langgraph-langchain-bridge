@@ -52,8 +52,8 @@ springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter
 junitBom = { module = "org.junit:junit-bom", version.ref = "junitJupiter" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 junitJupiterApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junitJupiter" }
-junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "1.14.2" }
-junitPlatformSuite = { module = "org.junit.platform:junit-platform-suite", version = "1.14.2" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
+junitPlatformSuite = { module = "org.junit.platform:junit-platform-suite", version = "6.0.3" }
 
 awaitility = { module = "org.awaitility:awaitility", version.ref = "awaitility" }
 
