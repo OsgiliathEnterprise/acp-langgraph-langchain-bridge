@@ -7,7 +7,6 @@ project:
   versionPattern: SEMVER
   description: Bridge module between ACP and LangGraph/LangChain
   copyright: 2025 Charlie Mordant
-  website: https://github.com/OsgiliathEnterprise/acp-langgraph-langchain-bridge
   authors:
     - Charlie Mordant
   license: Apache-2.0

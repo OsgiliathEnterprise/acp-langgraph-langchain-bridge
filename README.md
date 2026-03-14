@@ -1,4 +1,7 @@
 # ACP ↔ LangGraph / LangChain Bridge
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=OsgiliathEnterprise_acp-langgraph-langchain-bridge&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=OsgiliathEnterprise_acp-langgraph-langchain-bridge)
+![Maven Central Version](https://img.shields.io/maven-central/v/net.osgiliath.ai/acp-langraph-langchain-bridge)
+
 
 A Spring Boot application that bridges the **JetBrains Agent Client Protocol (ACP)** with **LangChain4j** and **LangGraph4j**, enabling any ACP-compatible IDE (e.g. JetBrains IDEs) to interact with a LangChain4j-powered AI agent over standard I/O.
 

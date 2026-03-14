@@ -1,16 +1,16 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("org.springframework.boot") version "3.4.2"
-    id("io.spring.dependency-management") version "1.1.6"
-    id("org.jetbrains.gradle.plugin.idea-ext") version "1.1.9"
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.springDependencyManagement)
+    alias(libs.plugins.ideaExt)
     id("idea")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.10"
+    alias(libs.plugins.kotlinSerialization)
     `java-library`
-    id("org.jreleaser") version "1.15.0"
-    id("org.sonarqube") version "7.2.3.7755"
-    id("org.owasp.dependencycheck") version "12.2.0"
-    kotlin("jvm") version "2.1.10"
+    alias(libs.plugins.jreleaser)
+    alias(libs.plugins.sonarqube)
+    alias(libs.plugins.dependencycheck)
+    alias(libs.plugins.kotlinJvm)
     wrapper
     id("maven-publish")
     jacoco
@@ -28,7 +28,7 @@ tasks.wrapper {
 }
 
 configure<JacocoPluginExtension> {
-    toolVersion = "0.8.12"
+    toolVersion = libs.versions.jacoco.get()
 }
 
 tasks.withType<Test>().configureEach {
@@ -61,9 +61,9 @@ tasks.named<JacocoReport>("jacocoTestReport") {
         csv.required.set(false)
     }
 }
-// Override Spring Boot's JUnit version to match Cucumber 7.34.2 requirements
+// Override Spring Boot's JUnit version to match Cucumber requirements
 ext {
-    set("junit-jupiter.version", "5.14.2")
+    set("junit-jupiter.version", libs.versions.junitJupiter.get())
 }
 
 // Explicitly configure Java toolchain for this module to ensure consistency
@@ -90,72 +90,72 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 configurations.all {
+    val kotlinVersion = libs.versions.kotlin.get()
+    val coroutinesVersion = libs.versions.kotlinxCoroutines.get()
+    val junitVersion = libs.versions.junitJupiter.get()
+
     resolutionStrategy {
-        force("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
-        force("org.jetbrains.kotlin:kotlin-stdlib-common:2.1.10")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-        force("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
-        // Force JUnit Platform 5.14.2 to match Cucumber 7.34.2 requirements
+        force("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+        force("org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+        force("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion")
+        // Force JUnit Platform to match Cucumber requirements
         force("org.junit.platform:junit-platform-engine:1.14.2")
         force("org.junit.platform:junit-platform-commons:1.14.2")
         force("org.junit.platform:junit-platform-suite:1.14.2")
         force("org.junit.platform:junit-platform-suite-api:1.14.2")
         force("org.junit.platform:junit-platform-suite-engine:1.14.2")
         force("org.junit.platform:junit-platform-launcher:1.14.2")
-        force("org.junit.jupiter:junit-jupiter:5.14.2")
-        force("org.junit.jupiter:junit-jupiter-api:5.14.2")
-        force("org.junit.jupiter:junit-jupiter-engine:5.14.2")
+        force("org.junit.jupiter:junit-jupiter:$junitVersion")
+        force("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+        force("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }
 }
 
 dependencies {
-    "implementation"(platform("io.cucumber:cucumber-bom:7.34.3"))
-    "implementation"(platform("org.bsc.langgraph4j:langgraph4j-bom:1.8.3"))
-    "implementation"(platform("dev.langchain4j:langchain4j-bom:1.11.0"))
+    implementation(platform(libs.cucumberBom))
+    implementation(platform(libs.langgraph4jBom))
+    implementation(platform(libs.langchain4jBom))
 
     // Official ACP Kotlin SDK from JetBrains
-    // Provides built-in protocol handling, STDIO transport, and session management
-    implementation("com.agentclientprotocol:acp:0.15.3")
+    implementation(libs.acp)
 
     // Kotlin stdlib (required by ACP SDK)
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.10")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-common:2.1.10")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.9.0")
+    implementation(libs.kotlinStdlib)
+    implementation(libs.kotlinStdlibCommon)
+    implementation(libs.kotlinxCoroutinesCore)
+    implementation(libs.kotlinxCoroutinesCoreJvm)
 
     // LangChain4j Backend (Agent Orchestrator)
-    implementation("dev.langchain4j:langchain4j")
-    implementation("dev.langchain4j:langchain4j-spring-boot-starter")
-    implementation("dev.langchain4j:langchain4j-open-ai-spring-boot-starter")
-    implementation("dev.langchain4j:langchain4j-http-client-jdk")
+    implementation(libs.langchain4j)
+    implementation(libs.langchain4jSpringBootStarter)
+    implementation(libs.langchain4jOpenAiSpringBootStarter)
+    implementation(libs.langchain4jHttpClientJdk)
 
     // LangGraph4j (Agent State Management)
-    implementation("org.bsc.langgraph4j:langgraph4j-core")
-    implementation("org.bsc.langgraph4j:langgraph4j-langchain4j")
+    implementation(libs.langgraph4jCore)
+    implementation(libs.langgraph4jLangchain4j)
 
     // Spring Boot
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-json")
+    implementation(libs.springBootStarter)
+    implementation(libs.springBootStarterJson)
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        // Exclude Spring Boot's JUnit Platform version management
+    testImplementation(libs.springBootStarterTest) {
         exclude(group = "org.junit.platform")
     }
 
-    // Import JUnit BOM AFTER Spring Boot to override its version management
-    testImplementation(platform("org.junit:junit-bom:5.14.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    // Testing utilities
-    testImplementation("org.awaitility:awaitility:4.2.2")
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.junitJupiter)
+    testRuntimeOnly(libs.junitPlatformLauncher)
+    testImplementation(libs.junitJupiterApi)
+    testImplementation(libs.awaitility)
 
     // Cucumber/Gherkin BDD Testing
-    testImplementation("io.cucumber:cucumber-core")
-    testImplementation("io.cucumber:cucumber-java")
-    testImplementation("io.cucumber:cucumber-spring")
-    testImplementation("io.cucumber:cucumber-junit-platform-engine")
-    testImplementation("org.junit.platform:junit-platform-suite")
+    testImplementation(libs.cucumberCore)
+    testImplementation(libs.cucumberJava)
+    testImplementation(libs.cucumberSpring)
+    testImplementation(libs.cucumberJunitPlatformEngine)
+    testImplementation(libs.junitPlatformSuite)
 }
 
 tasks.withType<Jar> {
@@ -233,7 +233,7 @@ sonar {
         )
         property(
             "sonar.java.test.binaries",
-            "${layout.buildDirectory.get()}/classes/java/test"
+            "${layout.buildDirectory.get()}/classes/java/test,${layout.buildDirectory.get()}/classes/kotlin/test"
         )
     }
 }
