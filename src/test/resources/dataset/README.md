@@ -1,186 +1,119 @@
-# Test Dataset for ResourceLink Scenarios
+# Test Dataset Files
 
-This directory contains sample files used by the ResourceLink attachment test scenarios.
+This directory contains test data files used in Cucumber BDD scenarios for testing the ACP ResourceLinks attachment support feature.
+
+## Purpose
+
+These files are designed to produce **predictable and accurate LLM responses** for CI/CD testing. Each file contains clear patterns, design principles, and annotations that enable LLMs to provide consistent answers during automated testing.
 
 ## Files
 
-### Thread.java
-A simplified but realistic Java class representing the `java.lang.Thread` class. Used to test:
-- Java source code file handling
-- Text/Java MIME type detection
-- Code analysis scenarios
+### Java Source Files
 
-**Size**: ~15KB  
-**MIME Type**: `text/java`  
-**Usage**: Scenario 1, 2, 9, alternative  
+#### `Thread.java`
+- **Type**: Java class demonstrating concurrency
+- **Design Patterns**: Observer pattern
+- **Key Features**: Runnable implementation, thread-safe operations
+- **Expected LLM Recognition**: 
+  - Should identify Observer pattern
+  - Should recognize concurrent programming concepts
+  - Should note thread safety mechanisms
 
-### String.java
-A simplified but realistic Java class representing the `java.lang.String` class. Used to test:
-- Multiple file comparison scenarios
-- String processing in Java context
-- Source code references
+#### `String.java`
+- **Type**: Java class demonstrating immutability
+- **Design Patterns**: Immutable Value Object, Builder pattern
+- **Key Features**: Immutable design, defensive copying, builder for construction
+- **Expected LLM Recognition**:
+  - Should identify Builder pattern
+  - Should recognize immutability principles
+  - Should note defensive copying for thread safety
 
-**Size**: ~12KB  
-**MIME Type**: `text/java`  
-**Usage**: Scenario 2
+#### `Application.java`
+- **Type**: Spring Boot application entry point
+- **Design Patterns**: Singleton, Factory, Inversion of Control (IoC)
+- **Framework**: Spring Boot
+- **Key Features**: Bean configuration, component scanning, dependency injection
+- **Expected LLM Recognition**:
+  - Should identify Spring Boot application
+  - Should recognize Dependency Injection pattern
+  - Should note Factory pattern in Bean creation
 
-### configuration.json
-Sample configuration file in JSON format. Used to test:
-- JSON document handling
-- Configuration file processing
-- Mixed file type scenarios
+#### `Service.java`
+- **Type**: Business service layer class
+- **Design Patterns**: Service Layer, Transaction Script, Repository pattern
+- **Framework**: Spring Framework with transaction management
+- **Key Features**: Transactional operations, dependency injection, business logic
+- **Expected LLM Recognition**:
+  - Should identify Service Layer pattern
+  - Should recognize Transaction management
+  - Should note Repository pattern usage
 
-**Contents**:
-```json
-{
-  "application": {
-    "name": "ERP Application",
-    "version": "1.0.0",
-    "environment": "production",
-    "database": { ... },
-    "logging": { ... },
-    "features": { ... }
-  }
-}
-```
+#### `Controller.java`
+- **Type**: REST API controller
+- **Design Patterns**: MVC (Model-View-Controller), Front Controller, DTO, Command pattern
+- **Framework**: Spring Web MVC
+- **Key Features**: RESTful endpoints (GET, POST, PUT, DELETE), HTTP status codes
+- **Expected LLM Recognition**:
+  - Should identify MVC pattern
+  - Should recognize RESTful API design
+  - Should note CRUD operations
+  - Should identify DTO pattern
 
-**Size**: ~200 bytes  
-**MIME Type**: `application/json`  
-**Usage**: Scenario 2, 3
+### Configuration Files
 
-## Usage in Test Scenarios
+#### `configuration.json`
+- **Type**: JSON configuration file
+- **Content**: Application settings for production environment
+- **Key Sections**: server, database, features, security, logging
+- **Expected LLM Recognition**:
+  - Should parse JSON structure correctly
+  - Should identify production configuration
+  - Should recognize standard configuration patterns (database, security, logging)
+  - Should note specific values (port 8080, PostgreSQL database, OAuth2 authentication)
 
-### Creating ResourceLinks from Dataset Files
+#### `config.yaml`
+- **Type**: YAML configuration file (Spring Boot format)
+- **Content**: Comprehensive Spring Boot application configuration
+- **Key Sections**: application, server, spring (datasource, jpa, security), logging, management
+- **Expected LLM Recognition**:
+  - Should parse YAML structure correctly
+  - Should identify Spring Boot configuration patterns
+  - Should recognize Hibernate/JPA configuration
+  - Should note OAuth2 security setup
+  - Should identify Prometheus metrics export
 
-The `DatasetResourceLinkHelper` class provides convenient methods to create ResourceLinks pointing to these files:
+## Testing Guidelines
 
-```java
-// Create a single ResourceLink
-ContentBlock.ResourceLink link = DatasetResourceLinkHelper.createResourceLinkFromDataset(
-    "Thread.java",
-    "Thread.java",
-    "text/java"
-);
+### For CI/CD Tests
 
-// Create multiple ResourceLinks at once
-Map<String, Map<String, String>> fileMap = new HashMap<>();
-fileMap.put("Thread.java", Map.of("name", "Thread.java", "mimeType", "text/java"));
-fileMap.put("String.java", Map.of("name", "String.java", "mimeType", "text/java"));
+When using these files in automated tests, expect LLMs to:
 
-List<ContentBlock.ResourceLink> links = DatasetResourceLinkHelper.createMultipleResourceLinks(fileMap);
-```
+1. **Correctly identify file types** and programming languages
+2. **Recognize design patterns** explicitly mentioned in comments
+3. **Parse configuration files** accurately
+4. **Provide consistent answers** about the content
+5. **Reference specific elements** like class names, method names, pattern names
 
-### In Cucumber Step Definitions
+### Validation Criteria
 
-Step definitions automatically use the dataset helper:
+Tests should verify that the LLM:
+- Mentions specific design patterns (Observer, Builder, MVC, etc.)
+- Identifies frameworks correctly (Spring Boot, Spring MVC)
+- Parses configuration values accurately
+- Provides consistent answers across multiple test runs
+- References correct file/class names when discussing the code
 
-```gherkin
-Given I have a ResourceLink pointing to file "src/test/resources/dataset/Thread.java" with name "Thread.java"
-```
+## File Updates
 
-This creates a file:// URI pointing to:
-```
-file:///absolute/path/to/src/test/resources/dataset/Thread.java
-```
+When modifying these files:
+1. Keep comments clear and explicit about patterns used
+2. Maintain predictable structure for consistent LLM interpretation
+3. Update this README with any significant changes
+4. Ensure changes won't cause test flakiness
 
-### Verifying File Content
+## Related Feature Files
 
-Read the actual content of a dataset file:
-
-```java
-String content = DatasetResourceLinkHelper.readDatasetFile("Thread.java");
-```
-
-## Adding New Dataset Files
-
-To add new test files to the dataset:
-
-1. Create the file in this directory: `src/test/resources/dataset/`
-2. Update this README with:
-   - File name and description
-   - Size and MIME type
-   - Which scenarios use it
-3. The `DatasetResourceLinkHelper` will automatically detect the MIME type based on file extension
-
-### Supported MIME Type Detection
-
-The helper auto-detects based on file extension:
-
-| Extension | MIME Type |
-|-----------|-----------|
-| `.java` | `text/java` |
-| `.json` | `application/json` |
-| `.xml` | `application/xml` |
-| `.yaml`, `.yml` | `application/x-yaml` |
-| `.txt` | `text/plain` |
-| `.md` | `text/markdown` |
-| `.pdf` | `application/pdf` |
-| `.csv` | `text/csv` |
-| Other | `application/octet-stream` |
-
-## File Paths
-
-All dataset files use relative paths:
-
-```
-Dataset Base: src/test/resources/dataset/
-├── Thread.java
-├── String.java
-└── configuration.json
-```
-
-When creating ResourceLinks, use relative paths:
-```java
-DatasetResourceLinkHelper.createResourceLinkFromDataset(
-    "Thread.java",  // relative to dataset base
-    "Thread.java"
-)
-```
-
-The helper automatically converts to absolute file:// URI:
-```
-file:///absolute/path/to/src/test/resources/dataset/Thread.java
-```
-
-## Test Scenario Mapping
-
-| Scenario | Files Used | Purpose |
-|----------|-----------|---------|
-| 1 | Thread.java | Single file ResourceLink |
-| 2 | Thread.java, String.java, configuration.json | Multiple files |
-| 3 | configuration.json | Complete metadata preservation |
-| 4 | data.xml (placeholder) | Graph state injection |
-| 5 | (none) | Empty ResourceLink list |
-| 6 | (hardcoded URI) | File URI scheme |
-| 7 | (hardcoded URI) | HTTP URI scheme |
-| 8 | Application.java (placeholder) | Logging |
-| 9 | Thread.java | Dataset alternative to archive path |
-| 10 | service.java, config.yaml (placeholders) | Integrity check |
-| 11 | Observable.java (placeholder) | Context awareness |
-| 12 | file1.java (placeholder) | Appender semantics |
-| 13 | context.json (placeholder) | Pre-stream availability |
-| 14 | minimal.txt (placeholder) | Minimal fields |
-| 15 | (no files) | Method signature |
-
-## Performance Considerations
-
-- Files are loaded from disk on-demand
-- Large files (>10MB) should be avoided for unit tests
-- Current test files total ~27KB
-
-## Extending the Dataset
-
-To create additional test scenarios:
-
-1. Add files to `src/test/resources/dataset/`
-2. Create corresponding steps in `ResourceLinkAttachmentSteps.java`
-3. Update feature file with new scenarios
-4. Add file documentation to this README
-
-## Related Files
-
-- **Helper Class**: `DatasetResourceLinkHelper.java`
-- **Step Definitions**: `ResourceLinkAttachmentSteps.java`
-- **Feature File**: `acp_attachment.feature`
-- **Feature File Location**: `src/test/resources/features/acp_attachment.feature`
+These dataset files are referenced in:
+- `codeprompt/src/test/resources/features/attachment-support.feature`
+- `acp-langraph-langchain-bridge/src/test/resources/features/acp_attachment.feature`
 
