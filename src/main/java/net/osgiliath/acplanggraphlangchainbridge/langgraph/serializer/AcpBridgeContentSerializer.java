@@ -23,6 +23,13 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
 
     private static final String RESOURCE_LINK_KIND = "RESOURCE_LINK";
     private static final String SERIALIZER_PREFIX = "Kind=";
+
+    /**
+     * Serializes the given Content object. If the object is an instance of ResourceLinkContent, it writes a specific marker and its fields in a defined order. For other Content types, it delegates to the parent serializer.
+     * @param object the Content object to serialize. It can be an instance of ResourceLinkContent or any other Content type supported by the parent serializer.
+     * @param out the ObjectOutput stream to write the serialized data to. The method writes the type marker and fields for ResourceLinkContent, or delegates to the parent serializer for other types.
+     * @throws IOException if an I/O error occurs during serialization. This can happen if there is an issue with the output stream or if the object being serialized contains non-serializable fields.
+     */
     @Override
     public void write(Content object, ObjectOutput out) throws IOException {
         if (object instanceof ResourceLinkContent(
@@ -73,6 +80,9 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
 
     /**
      * Helper method to write nullable UTF strings
+     * @param value the string value to write. If the value is null, it writes an empty string to the output stream. Otherwise, it writes the actual string value.
+     * @param out the ObjectOutput stream to write the string value to. It must not be null.
+     * @throws IOException if there is an error writing to the output stream
      */
     private void writeResourceLinkString(String value, ObjectOutput out) throws IOException {
         Serializer.writeUTF(Objects.requireNonNullElse(value, ""), out);
@@ -80,6 +90,9 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
 
     /**
      * Helper method to read nullable UTF strings
+     * @param in the ObjectInput stream to read the string value from. It must not be null.
+     * @return an Optional containing the string value read from the input stream. If the read value is an empty string, it returns Optional.empty(). Otherwise, it returns Optional.of(value).
+     * @throws IOException if there is an error reading from the input stream
      */
     private Optional<String> readResourceLinkString(ObjectInput in) throws IOException {
         String value = Serializer.readUTF(in);
@@ -88,6 +101,9 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
 
     /**
      * Helper method to write nullable objects
+     * @param obj the object to write. If the object is null, it writes a boolean false to the output stream. Otherwise, it writes a boolean true followed by the object itself.
+     * @param out the ObjectOutput stream to write the object to. It must not be null.
+     * @throws IOException if there is an error writing to the output stream
      */
     private void writeResourceLinkObject(Object obj, ObjectOutput out) throws IOException {
         out.writeBoolean(obj != null);
@@ -98,6 +114,10 @@ public class AcpBridgeContentSerializer extends ContentSerializer {
 
     /**
      * Helper method to read nullable objects
+     * @param in the ObjectInput stream to read the object from. It must not be null.
+     * @return the deserialized object of type T. If the object is null, it returns null. Otherwise, it returns the deserialized object.
+     * @throws IOException if there is an error reading from the input stream
+     * @throws ClassNotFoundException if the class of the serialized object cannot be found
      */
     private <T> T readResourceLinkObject(ObjectInput in, Class<T> type) throws IOException, ClassNotFoundException {
         boolean isNotNull = in.readBoolean();
