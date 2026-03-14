@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import java.io.Serializable;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Exploration of LangChain4j message content system.
  *
@@ -17,7 +20,7 @@ import java.util.List;
  * - ImageContent
  * - We could add: ResourceLinkContent
  */
-public class ExploreMessageContentTest {
+class ExploreMessageContentTest {
 
     @Test
     void exploreContentTypes() {
@@ -39,11 +42,11 @@ public class ExploreMessageContentTest {
                 TextContent.from("Hello"),
                 TextContent.from("World")
             ));
-            System.out.println("\n✅ UserMessage supports multiple contents!");
-            System.out.println("Contents: " + userMsg.contents());
+            assertThat(userMsg.contents()).hasSizeGreaterThan(1);
         } catch (Exception e) {
             System.out.println("\n❌ UserMessage doesn't support multiple contents");
             System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 
@@ -54,12 +57,7 @@ public class ExploreMessageContentTest {
 
         boolean isSerializable = content instanceof Serializable;
         System.out.println("TextContent instanceof Serializable: " + isSerializable);
-
-        if (isSerializable) {
-            System.out.println("✅ We can extend Content and it will be serializable!");
-        } else {
-            System.out.println("❌ Content types are not serializable by default");
-        }
+        assertTrue(isSerializable, "TextContent should be serializable");
     }
 }
 
