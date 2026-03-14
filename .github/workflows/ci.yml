@@ -120,6 +120,17 @@ jobs:
           path: build/reports/jacoco/test/jacocoTestReport.xml
           retention-days: 30
 
+      - name: Upload Sonar inputs (coverage + binaries)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: sonar-inputs
+          path: |
+            build/reports/jacoco/test/jacocoTestReport.xml
+            build/classes/
+            build/tmp/kotlin-classes/
+          retention-days: 30
+
       - name: Upload test HTML reports
         if: always()
         uses: actions/upload-artifact@v7
@@ -246,13 +257,24 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Download Sonar inputs
+        uses: actions/download-artifact@v4
+        with:
+          name: sonar-inputs
+          path: .
+
       - name: SonarQube analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: ./gradlew --dependency-verification lenient sonar -Dsonar.qualitygate.wait=true --stacktrace
+        run: |
+          ./gradlew --dependency-verification lenient sonar \
+            -Dsonar.qualitygate.wait=true \
+            -Dsonar.coverage.jacoco.xmlReportPaths=build/reports/jacoco/test/jacocoTestReport.xml \
+            -Dsonar.java.binaries=build/classes/java/main,build/classes/kotlin/main \
+            --stacktrace
 
   dependency-submission:
     runs-on: ubuntu-latest
