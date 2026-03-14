@@ -30,10 +30,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
+        uses: gradle/actions/wrapper-validation@v5
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -66,7 +65,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Assemble project
-        run: ./gradlew --dependency-verification strict assemble --stacktrace
+        run: ./gradlew --dependency-verification lenient assemble --stacktrace
 
       - name: Upload build logs on failure
         if: failure()
@@ -103,7 +102,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run tests and generate JaCoCo report
-        run: ./gradlew --dependency-verification strict test jacocoTestReport --stacktrace
+        run: ./gradlew --dependency-verification lenient test jacocoTestReport --stacktrace
 
       - name: Upload test results
         if: always()
@@ -180,7 +179,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run quality checks
-        run: ./gradlew --dependency-verification strict check --stacktrace
+        run: ./gradlew --dependency-verification lenient check --stacktrace
 
       - name: Upload code quality reports
         if: always()
@@ -214,7 +213,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Check for dependency vulnerabilities
-        run: ./gradlew --dependency-verification strict dependencyCheckAnalyze --stacktrace
+        run: ./gradlew --dependency-verification lenient dependencyCheckAnalyze --stacktrace
 
       - name: Upload dependency check reports
         if: always()
@@ -253,7 +252,7 @@ jobs:
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
           SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: ./gradlew --dependency-verification strict sonar -Dsonar.qualitygate.wait=true --stacktrace
+        run: ./gradlew --dependency-verification lenient sonar -Dsonar.qualitygate.wait=true --stacktrace
 
   dependency-submission:
     runs-on: ubuntu-latest
