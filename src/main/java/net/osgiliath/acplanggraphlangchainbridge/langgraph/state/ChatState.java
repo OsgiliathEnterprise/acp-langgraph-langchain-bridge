@@ -18,6 +18,7 @@ import java.util.Optional;
  */
 public class ChatState extends MessagesState<ChatMessage> {
 
+    public static final String SESSION_CONTEXT = "sessionContext";
     /**
      * Channel for attachments metadata. The content of this channel is a list of {@link ResourceLinkContent}, which contains the metadata of the attachments sent by the user.
      */
@@ -32,6 +33,7 @@ public class ChatState extends MessagesState<ChatMessage> {
      */
     public static final Map<String, Channel<?>> SCHEMA = Map.of(
             MESSAGES_STATE, Channels.appender(ArrayList::new),
+            SESSION_CONTEXT, Channels.base((currentValue, newValue) -> newValue, SessionContext::empty),
             ATTACHMENTS_META, Channels.appender(ArrayList::new),
             ATTACHMENTS_SCHEMA, Channels.appender(ArrayList::new)
     );
@@ -50,6 +52,22 @@ public class ChatState extends MessagesState<ChatMessage> {
      */
     public static StateSerializer<ChatState> serializer() {
         return new AcpLangChain4jStateSerializer<>(ChatState::new);
+    }
+
+    public SessionContext sessionContext() {
+        return this.<SessionContext>value(SESSION_CONTEXT).orElse(SessionContext.empty());
+    }
+
+    public String sessionId() {
+        return sessionContext().sessionId();
+    }
+
+    public String cwd() {
+        return sessionContext().cwd();
+    }
+
+    public Map<String, String> mcpServers() {
+        return sessionContext().mcpServers();
     }
 
     /**

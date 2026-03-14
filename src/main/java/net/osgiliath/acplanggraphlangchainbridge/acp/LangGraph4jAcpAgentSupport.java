@@ -2,6 +2,7 @@ package net.osgiliath.acplanggraphlangchainbridge.acp;
 
 import com.agentclientprotocol.model.ContentBlock;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -34,15 +35,16 @@ public class LangGraph4jAcpAgentSupport implements InAcpAdapter {
 
     @Override
     public AcpSessionBridge createSession(String sessionId, String cwd, Map<String, String> mcpServers) {
-        log.info("Creating new ACP session: {} in {}", sessionId, cwd);
-        return new LangChain4jSession(sessionId, adapter);
+        SessionContext sessionContext = SessionContext.of(sessionId, cwd, mcpServers);
+        log.info("Creating new ACP session: {} in {}", sessionContext.sessionId(), sessionContext.cwd());
+        return new LangChain4jSession(sessionContext, adapter);
     }
 
-    private record LangChain4jSession(String sessionId, LangGraph4jAdapter adapter) implements AcpSessionBridge {
+    private record LangChain4jSession(SessionContext sessionContext, LangGraph4jAdapter adapter) implements AcpSessionBridge {
 
         @Override
         public String getSessionId() {
-            return sessionId;
+            return sessionContext.sessionId();
         }
 
 
@@ -73,7 +75,7 @@ public class LangGraph4jAcpAgentSupport implements InAcpAdapter {
         @Override
         public void streamPrompt(String promptText, List<ContentBlock.ResourceLink> resourceLinks, TokenConsumer consumer) {
             try {
-                adapter.streamPrompt(promptText, resourceLinks, consumer);
+                adapter.streamPrompt(sessionContext, promptText, resourceLinks, consumer);
             } catch (Exception e) {
                 consumer.onError(e);
             }
