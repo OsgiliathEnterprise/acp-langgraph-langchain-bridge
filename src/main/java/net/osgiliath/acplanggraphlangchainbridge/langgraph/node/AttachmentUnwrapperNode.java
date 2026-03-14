@@ -43,11 +43,14 @@ public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
      */
     @Override
     public Map<String, Object> apply(ChatState state) throws IOException {
-        log.debug("Filtering metadata for question: {}, with attachments: {}", state.messages(), state.attachmentsMetadata());
+        log.debug("Unwrapping attachments for session {} question: {} with attachments: {}",
+            state.sessionId(),
+            state.messages(),
+            state.attachmentsMetadata());
         List<byte[]> attachments = new ArrayList<>();
 
         for (ResourceLinkContent metadata : state.attachmentsMetadata()) {
-            log.debug("Evaluating attachment metadata: {}", metadata);
+            log.debug("Evaluating attachment metadata for session {}: {}", state.sessionId(), metadata);
             URI filePath = metadata.uri();
             Path path = Paths.get(filePath);
 
