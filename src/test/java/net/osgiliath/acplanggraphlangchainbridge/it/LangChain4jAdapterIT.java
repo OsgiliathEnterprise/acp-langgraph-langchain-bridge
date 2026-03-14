@@ -1,6 +1,5 @@
 package net.osgiliath.acplanggraphlangchainbridge.it;
 
-import com.agentclientprotocol.model.ContentBlock;
 import net.osgiliath.acplanggraphlangchainbridge.AcpLangGraphLangChainBridgeApplication;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
@@ -28,29 +27,6 @@ class LangChain4jAdapterIT {
     @MockitoBean
     private CommandLineRunner commandLineRunner;
 
-    /*
-    static OllamaContainer ollamaContainer;
-    @BeforeAll
-    public static void before_all() throws IOException, InterruptedException {
-        System.setProperty("api.version", "1.44");
-        ollamaContainer = new OllamaContainer(
-            DockerImageName.parse("ollama/ollama")
-        ).withReuse(true);
-        ollamaContainer.start();
-        ollamaContainer.execInContainer("ollama", "pull", "gemma3:1b");
-    }
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("langchain4j.ollama.chat-model.base-url", () -> "http://" + ollamaContainer.getHost() + ":" + ollamaContainer.getMappedPort(11434));
-        registry.add("langchain4j.ollama.streaming-chat-model.base-url", () -> "http://" + ollamaContainer.getHost() + ":" + ollamaContainer.getMappedPort(11434));
-    }
-    @AfterAll
-    public static void after_all() {
-        if (ollamaContainer != null) {
-            ollamaContainer.stop();
-        }
-    }
-*/
     @Test
     void contextLoads() {
         assertThat(adapter).isNotNull();

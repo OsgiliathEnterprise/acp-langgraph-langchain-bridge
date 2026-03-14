@@ -567,7 +567,7 @@ public class ResourceLinkAttachmentSteps {
         ResourceLinkContent actual = stateAttachments.get(0);
 
         assertThat(actual.name()).isEqualTo(expected.getName());
-        assertThat(actual.uri().toString()).isEqualTo(expected.getUri());
+        assertThat(actual.uri()).hasToString(expected.getUri());
 
         log.debug("Graph state property '{}' verified to contain ResourceLink", propertyName);
     }
@@ -684,7 +684,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the graph state accumulates the first ResourceLink")
     public void graphStateAccumulatesFirstResourceLink() {
-        assertThat(currentResourceLinks.size()).isGreaterThanOrEqualTo(1);
+        assertThat(currentResourceLinks).hasSizeGreaterThanOrEqualTo(1);
         log.debug("Graph state accumulates first ResourceLink");
     }
 

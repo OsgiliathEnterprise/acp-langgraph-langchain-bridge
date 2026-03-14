@@ -43,9 +43,6 @@ public class LLMProcessorNode implements NodeAction<ChatState> {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LLMProcessorNode.class);
 
-    public LLMProcessorNode() {
-    }
-
     @Override
     public Map<String, Object> apply(ChatState state) {
         log.info("CallModel");
