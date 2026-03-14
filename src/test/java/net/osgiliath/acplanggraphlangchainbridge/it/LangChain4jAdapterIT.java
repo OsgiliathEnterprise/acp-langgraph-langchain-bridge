@@ -9,11 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,7 +20,7 @@ import static org.awaitility.Awaitility.await;
 @SpringBootTest(classes = AcpLangGraphLangChainBridgeApplication.class,properties = {
     "spring.main.web-application-type=none"
 })
-public class LangChain4jAdapterIT {
+class LangChain4jAdapterIT {
     @Autowired
     private LangGraph4jAdapter adapter;
 

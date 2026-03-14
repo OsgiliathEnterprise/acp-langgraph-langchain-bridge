@@ -293,7 +293,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the adapter receives the ResourceLink with nested archive path")
     public void adapterReceivesResourceLinkWithArchivePath() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getUri()).contains("!/");
         log.info("ResourceLink with archive path received: {}", link.getUri());
@@ -395,7 +395,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the adapter preserves the file URI scheme")
     public void adapterPreservesFileUriScheme() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getUri()).startsWith("file://");
     }
@@ -409,13 +409,13 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the URI is passed to graph nodes")
     public void uriPassedToGraphNodes() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         log.debug("URI passed to graph nodes");
     }
 
     @Then("the adapter preserves the http URI scheme")
     public void adapterPreservesHttpUriScheme() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getUri()).startsWith("http");
     }
@@ -455,7 +455,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the ResourceLink name and uri are preserved")
     public void resourceLinkNameAndUriPreserved() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getName()).isNotNull();
         assertThat(link.getUri()).isNotNull();
@@ -463,7 +463,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the adapter accepts the minimal ResourceLink")
     public void adapterAcceptsMinimalResourceLink() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         log.debug("Adapter accepts minimal ResourceLink");
     }
 
@@ -503,34 +503,34 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the URI points to valid dataset file")
     public void uriPointsToValidDatasetFile() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         log.debug("URI points to valid dataset file");
     }
 
     @Then("the ResourceLink name is preserved as {string}")
     public void resourceLinkNamePreservedAs(String expectedName) {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getName()).isEqualTo(expectedName);
     }
 
     @Then("the ResourceLink URI points to {string}")
     public void resourceLinkUriPointsTo(String expectedPath) {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getUri()).contains(expectedPath);
     }
 
     @Then("the ResourceLink description is preserved as {string}")
     public void resourceLinkDescriptionPreservedAs(String expectedDescription) {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getDescription()).isEqualTo(expectedDescription);
     }
 
     @Then("the ResourceLink mimeType is preserved as {string}")
     public void resourceLinkMimeTypePreservedAs(String expectedMimeType) {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getMimeType()).isEqualTo(expectedMimeType);
     }
@@ -639,13 +639,13 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("the graph state contains the ResourceLink metadata")
     public void graphStateContainsResourceLinkMetadata() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         log.debug("Graph state contains ResourceLink metadata");
     }
 
     @Then("the agent nodes can access the ResourceLink information")
     public void agentNodesCanAccessResourceLinkInformation() {
-        assertThat(currentResourceLinks.size()).isGreaterThan(0);
+        assertThat(currentResourceLinks).hasSizeGreaterThan(0);
         ContentBlock.ResourceLink link = currentResourceLinks.get(0);
         assertThat(link.getName()).isNotNull();
         log.debug("Agent nodes can access ResourceLink information: {}", link.getName());
