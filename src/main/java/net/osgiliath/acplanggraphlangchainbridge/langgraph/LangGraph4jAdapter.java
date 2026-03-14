@@ -6,6 +6,7 @@ import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
 import org.bsc.langgraph4j.streaming.StreamingOutput;
@@ -42,7 +43,7 @@ public class LangGraph4jAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(LangGraph4jAdapter.class);
 
-    private final PromptGraph graph;
+    private final PromptGraph<ChatState> graph;
 
     /**
      * Constructor for LangGraph4jAdapter.
@@ -50,7 +51,7 @@ public class LangGraph4jAdapter {
      * @param graph the PromptGraph instance to use for processing prompts
      */
     public LangGraph4jAdapter(
-                              PromptGraph graph) {
+                              PromptGraph<ChatState> graph) {
         this.graph = graph;
     }
 
@@ -70,17 +71,28 @@ public class LangGraph4jAdapter {
     public void streamPrompt(String promptText,
                              List<ContentBlock.ResourceLink> resourceLinks,
                              AcpAgentSupportBridge.TokenConsumer consumer) {
-        log.debug("Adapter streaming prompt: {}...",
-            promptText.length() > 50 ? promptText.substring(0, 50) : promptText);
+        streamPrompt(SessionContext.empty(), promptText, resourceLinks, consumer);
+    }
+
+    public void streamPrompt(SessionContext sessionContext,
+                             String promptText,
+                             List<ContentBlock.ResourceLink> resourceLinks,
+                             AcpAgentSupportBridge.TokenConsumer consumer) {
+        SessionContext effectiveSessionContext = sessionContext == null ? SessionContext.empty() : sessionContext;
+        String safePromptText = promptText == null ? "" : promptText;
+        log.debug("Adapter streaming prompt for session {} in cwd {}: {}...",
+            effectiveSessionContext.sessionId(),
+            effectiveSessionContext.cwd(),
+            safePromptText.length() > 50 ? safePromptText.substring(0, 50) : safePromptText);
 
         if (resourceLinks != null && !resourceLinks.isEmpty()) {
-            log.debug("Adapter received {} ResourceLink(s)", resourceLinks.size());
+            log.debug("Adapter received {} ResourceLink(s) for session {}", resourceLinks.size(), effectiveSessionContext.sessionId());
             resourceLinks.forEach(link ->
                 log.debug("  - ResourceLink: name={}, uri={}", link.getName(), link.getUri())
             );
         }
 
-        if (promptText == null || promptText.isBlank()) {
+        if (safePromptText.isBlank()) {
             consumer.onNext("Please provide a prompt.");
             consumer.onComplete();
             return;
@@ -100,11 +112,12 @@ public class LangGraph4jAdapter {
 
             // Create UserMessage with only text content
             // ResourceLinks will be stored separately in the state to avoid casting issues
-            UserMessage userMessage = UserMessage.from(promptText);
+            UserMessage userMessage = UserMessage.from(safePromptText);
 
             // Build initial state with the message and separate attachments
             Map<String, Object> initialState = new java.util.HashMap<>();
             initialState.put("messages", userMessage);
+            initialState.put(ChatState.SESSION_CONTEXT, effectiveSessionContext);
 
             // Store ResourceLinks as ResourceLinkContent in a separate state field
             // This approach avoids issues with LLM systems trying to cast mixed Content types
@@ -114,7 +127,9 @@ public class LangGraph4jAdapter {
                     .toList();
 
                 initialState.put(ChatState.ATTACHMENTS_META, linkContents);
-                log.debug("Stored {} ResourceLinkContent(s) in attachmentsMeta state field", linkContents.size());
+                log.debug("Stored {} ResourceLinkContent(s) in attachmentsMeta state field for session {}",
+                    linkContents.size(),
+                    effectiveSessionContext.sessionId());
             }
 
             // app.stream() yields StreamingOutput (token chunks) interleaved
@@ -133,6 +148,7 @@ public class LangGraph4jAdapter {
 
             consumer.onComplete();
         } catch (Throwable t) {
+            log.warn("Prompt streaming failed for session {}", effectiveSessionContext.sessionId(), t);
             consumer.onError(t);
         }
     }

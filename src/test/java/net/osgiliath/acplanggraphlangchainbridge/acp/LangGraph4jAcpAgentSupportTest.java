@@ -1,6 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.acp;
 
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class LangGraph4jAcpAgentSupportTest {
 
@@ -23,20 +25,25 @@ class LangGraph4jAcpAgentSupportTest {
         LangGraph4jAcpAgentSupport support = new LangGraph4jAcpAgentSupport(adapter);
 
         doAnswer(invocation -> {
-            AcpAgentSupportBridge.TokenConsumer consumer = invocation.getArgument(2);
+            AcpAgentSupportBridge.TokenConsumer consumer = invocation.getArgument(3);
             consumer.onNext("Hello ");
             consumer.onNext("world");
             consumer.onComplete();
             return null;
-        }).when(adapter).streamPrompt(eq("prompt"), any(), any());
+        }).when(adapter).streamPrompt(any(SessionContext.class), eq("prompt"), any(), any());
 
-        AcpAgentSupportBridge.AcpSessionBridge session = support.createSession("session-1", "/tmp", Map.of());
+        AcpAgentSupportBridge.AcpSessionBridge session = support.createSession("session-1", "/tmp", Map.of("mcp-a", "stdio://server"));
         CompletableFuture<String> result = session.processPrompt("prompt", List.of());
 
         String response = result.get(1, TimeUnit.SECONDS);
 
         assertTrue(result.isDone());
         assertEquals("Hello world", response);
+        verify(adapter).streamPrompt(
+            eq(SessionContext.of("session-1", "/tmp", Map.of("mcp-a", "stdio://server"))),
+            eq("prompt"),
+            any(),
+            any()
+        );
     }
 }
-
