@@ -90,10 +90,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 }
 
 configurations.all {
-    val kotlinVersion = libs.versions.kotlin.get()
-    val coroutinesVersion = libs.versions.kotlinxCoroutines.get()
-    val junitVersion = libs.versions.junitJupiter.get()
-
     resolutionStrategy {
         force(libs.kotlinStdlib)
         force(libs.kotlinStdlibCommon)
