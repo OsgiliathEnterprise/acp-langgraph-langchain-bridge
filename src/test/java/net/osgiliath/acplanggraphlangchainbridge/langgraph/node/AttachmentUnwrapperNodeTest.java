@@ -1,7 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph.node;
 
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
 import dev.langchain4j.data.message.UserMessage;
 import org.junit.jupiter.api.Test;
@@ -30,10 +30,10 @@ class AttachmentUnwrapperNodeTest {
         Files.write(firstFile, firstContent);
         Files.write(secondFile, secondContent);
 
-        ChatState state = new ChatState(Map.of(
+        AcpState state = new AcpState(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test")),
-            ChatState.ATTACHMENTS_META,
+            AcpState.ATTACHMENTS_META,
             List.of(
                 new ResourceLinkContent("first", firstFile.toUri(), null, null, null, null, null, null),
                 new ResourceLinkContent("second", secondFile.toUri(), null, null, null, null, null, null)
@@ -42,9 +42,9 @@ class AttachmentUnwrapperNodeTest {
 
         Map<String, Object> output = node.apply(state);
 
-        assertThat(output).containsKey(ChatState.ATTACHMENTS_SCHEMA);
+        assertThat(output).containsKey(AcpState.ATTACHMENTS_SCHEMA);
         @SuppressWarnings("unchecked")
-        List<byte[]> attachments = (List<byte[]>) output.get(ChatState.ATTACHMENTS_SCHEMA);
+        List<byte[]> attachments = (List<byte[]>) output.get(AcpState.ATTACHMENTS_SCHEMA);
         assertThat(attachments).hasSize(2);
         assertThat(attachments.get(0)).containsExactly(firstContent);
         assertThat(attachments.get(1)).containsExactly(secondContent);
@@ -52,23 +52,23 @@ class AttachmentUnwrapperNodeTest {
 
     @Test
     void returnsEmptyAttachmentListWhenMetadataIsMissing() throws IOException {
-        ChatState state = new ChatState(Map.of(
+        AcpState state = new AcpState(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test"))
         ));
 
         Map<String, Object> output = node.apply(state);
 
-        assertThat(output).containsEntry(ChatState.ATTACHMENTS_SCHEMA, List.of());
+        assertThat(output).containsEntry(AcpState.ATTACHMENTS_SCHEMA, List.of());
     }
 
     @Test
     void throwsWhenAttachmentFileCannotBeRead() {
         Path missingFile = Path.of("/definitely/missing/file.txt");
-        ChatState state = new ChatState(Map.of(
+        AcpState state = new AcpState(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test")),
-            ChatState.ATTACHMENTS_META,
+            AcpState.ATTACHMENTS_META,
             List.of(new ResourceLinkContent("missing", missingFile.toUri(), null, null, null, null, null, null))
         ));
 

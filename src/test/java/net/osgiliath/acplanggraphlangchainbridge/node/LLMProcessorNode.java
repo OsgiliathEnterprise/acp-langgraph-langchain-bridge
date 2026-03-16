@@ -7,7 +7,7 @@ import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.service.tool.ToolExecution;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.bsc.langgraph4j.action.NodeAction;
 import org.bsc.langgraph4j.langchain4j.generators.StreamingChatGenerator;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
@@ -39,12 +39,12 @@ import java.util.function.Consumer;
  * </ol>
  */
 @Component
-public class LLMProcessorNode implements NodeAction<ChatState> {
+public class LLMProcessorNode implements NodeAction<AcpState<ChatMessage>> {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LLMProcessorNode.class);
 
     @Override
-    public Map<String, Object> apply(ChatState state) {
+    public Map<String, Object> apply(AcpState<ChatMessage> state) {
         log.info("CallModel");
 
         var generator = StreamingChatGenerator.<MessagesState<ChatMessage>>builder()
