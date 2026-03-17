@@ -42,7 +42,7 @@ public class AttachmentUnwrapperNode<T> implements NodeAction<AcpState<T>> {
      * @throws IOException if there is an error reading any of the attachment files
      */
     @Override
-    public Map<String, Object> apply(AcpState state) throws IOException {
+    public Map<String, Object> apply(AcpState<T> state) throws IOException {
         log.debug("Unwrapping attachments for session {} question: {} with attachments: {}",
             state.sessionId(),
             state.messages(),

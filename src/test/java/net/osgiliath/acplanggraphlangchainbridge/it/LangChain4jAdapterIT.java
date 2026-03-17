@@ -1,5 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.it;
 
+import com.agentclientprotocol.model.ContentBlock;
+import com.agentclientprotocol.model.ResourceLink;
 import net.osgiliath.acplanggraphlangchainbridge.AcpLangGraphLangChainBridgeApplication;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
@@ -36,7 +38,7 @@ class LangChain4jAdapterIT {
     void testProcessPromptWithEmptyPrompt() {
         AtomicReference<String> response = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean(false);
-        adapter.streamPrompt("", Collections.EMPTY_LIST,new AcpAgentSupportBridge.TokenConsumer() {
+        adapter.streamPrompt("", Collections.emptyList(), new AcpAgentSupportBridge.TokenConsumer() {
             @Override
             public void onNext(String token) {
                 response.set(token);
@@ -48,7 +50,9 @@ class LangChain4jAdapterIT {
             }
 
             @Override
-            public void onError(Throwable t) {}
+            public void onError(Throwable t) {
+                // Ignore errors for this test
+            }
         });
         await().atMost(5, SECONDS).untilTrue(completed);
         assertThat(response.get()).isEqualTo("Please provide a prompt.");
@@ -58,7 +62,7 @@ class LangChain4jAdapterIT {
     void testProcessPromptWithBlankPrompt() {
         AtomicReference<String> response = new AtomicReference<>();
         AtomicBoolean completed = new AtomicBoolean(false);
-        adapter.streamPrompt("   ", Collections.EMPTY_LIST, new AcpAgentSupportBridge.TokenConsumer() {
+        adapter.streamPrompt("   ", Collections.emptyList(), new AcpAgentSupportBridge.TokenConsumer() {
             @Override
             public void onNext(String token) {
                 response.set(token);
@@ -70,7 +74,9 @@ class LangChain4jAdapterIT {
             }
 
             @Override
-            public void onError(Throwable t) {}
+            public void onError(Throwable t) {
+                // Ignore errors for this test
+            }
         });
         await().atMost(5, SECONDS).untilTrue(completed);
         assertThat(response.get()).isEqualTo("Please provide a prompt.");
