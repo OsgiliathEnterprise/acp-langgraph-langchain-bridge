@@ -1,8 +1,10 @@
 package net.osgiliath.acplanggraphlangchainbridge.configuration;
 
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.edge.LLMToToolEdge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import net.osgiliath.acplanggraphlangchainbridge.node.LLMProcessorNode;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
@@ -26,7 +28,7 @@ public class TestGraph implements PromptGraph {
     }
     @Override
     public StateGraph buildGraph() throws GraphStateException {
-         return new StateGraph<>(ChatState.SCHEMA, ChatState.serializer())
+         return new StateGraph<>(AcpState.SCHEMA, AcpState.<ChatMessage> serializer())
                 .addNode("agent", node_async(node))
                 .addEdge(START, "agent")
                 .addConditionalEdges("agent",

@@ -1,7 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph.node;
 
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.bsc.langgraph4j.action.NodeAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,7 @@ import java.util.Map;
  * needing to handle file I/O or metadata parsing.</p>
  */
 @Component
-public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
+public class AttachmentUnwrapperNode<T> implements NodeAction<AcpState<T>> {
 
     private static final Logger log = LoggerFactory.getLogger(AttachmentUnwrapperNode.class);
 
@@ -42,14 +42,14 @@ public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
      * @throws IOException if there is an error reading any of the attachment files
      */
     @Override
-    public Map<String, Object> apply(ChatState state) throws IOException {
+    public Map<String, Object> apply(AcpState state) throws IOException {
         log.debug("Unwrapping attachments for session {} question: {} with attachments: {}",
             state.sessionId(),
             state.messages(),
             state.attachmentsMetadata());
         List<byte[]> attachments = new ArrayList<>();
-
-        for (ResourceLinkContent metadata : state.attachmentsMetadata()) {
+        List<ResourceLinkContent> metadataList = state.attachmentsMetadata();
+        for (ResourceLinkContent metadata : metadataList) {
             log.debug("Evaluating attachment metadata for session {}: {}", state.sessionId(), metadata);
             URI filePath = metadata.uri();
             Path path = Paths.get(filePath);
@@ -58,7 +58,7 @@ public class AttachmentUnwrapperNode implements NodeAction<ChatState> {
             attachments.add(read);
         }
         return Map.of(
-                ChatState.ATTACHMENTS_SCHEMA, attachments
+                AcpState.ATTACHMENTS_SCHEMA, attachments
         );
     }
 }

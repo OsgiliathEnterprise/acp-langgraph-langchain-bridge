@@ -1,11 +1,12 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph;
 
 import com.agentclientprotocol.model.ContentBlock;
+import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
@@ -43,7 +44,7 @@ public class LangGraph4jAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(LangGraph4jAdapter.class);
 
-    private final PromptGraph<ChatState> graph;
+    private final PromptGraph<AcpState<ChatMessage>> graph;
 
     /**
      * Constructor for LangGraph4jAdapter.
@@ -51,7 +52,7 @@ public class LangGraph4jAdapter {
      * @param graph the PromptGraph instance to use for processing prompts
      */
     public LangGraph4jAdapter(
-                              PromptGraph<ChatState> graph) {
+                              PromptGraph<AcpState<ChatMessage>> graph) {
         this.graph = graph;
     }
 
@@ -99,7 +100,7 @@ public class LangGraph4jAdapter {
         }
 
         // Build the graph with a conditional edge following the official pattern.
-        final StateGraph<ChatState> workflow;
+        final StateGraph<AcpState<ChatMessage>> workflow;
         try {
             workflow = graph.buildGraph();
         } catch (GraphStateException e) {
@@ -117,7 +118,7 @@ public class LangGraph4jAdapter {
             // Build initial state with the message and separate attachments
             Map<String, Object> initialState = new java.util.HashMap<>();
             initialState.put("messages", userMessage);
-            initialState.put(ChatState.SESSION_CONTEXT, effectiveSessionContext);
+            initialState.put(AcpState.SESSION_CONTEXT, effectiveSessionContext);
 
             // Store ResourceLinks as ResourceLinkContent in a separate state field
             // This approach avoids issues with LLM systems trying to cast mixed Content types
@@ -126,7 +127,7 @@ public class LangGraph4jAdapter {
                     .map(ResourceLinkContent::from)
                     .toList();
 
-                initialState.put(ChatState.ATTACHMENTS_META, linkContents);
+                initialState.put(AcpState.ATTACHMENTS_META, linkContents);
                 log.debug("Stored {} ResourceLinkContent(s) in attachmentsMeta state field for session {}",
                     linkContents.size(),
                     effectiveSessionContext.sessionId());
@@ -137,7 +138,7 @@ public class LangGraph4jAdapter {
             var states = app.stream(initialState);
 
             states.forEach(nodeOutput -> {
-                if (nodeOutput instanceof StreamingOutput<ChatState> streamingOutput) {
+                if (nodeOutput instanceof StreamingOutput<AcpState<ChatMessage>> streamingOutput) {
                     var chunk = streamingOutput.chunk();
                     if (chunk != null && !chunk.isEmpty()) {
                         consumer.onNext(chunk);

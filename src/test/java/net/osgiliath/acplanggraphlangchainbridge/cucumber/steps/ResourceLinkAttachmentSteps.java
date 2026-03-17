@@ -7,7 +7,7 @@ import io.cucumber.java.en.When;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -258,7 +258,7 @@ public class ResourceLinkAttachmentSteps {
             List<ResourceLinkContent> linkContents = currentResourceLinks.stream()
                 .map(ResourceLinkContent::from)
                 .toList();
-            capturedGraphState.put(ChatState.ATTACHMENTS_META, linkContents);
+            capturedGraphState.put(AcpState.ATTACHMENTS_META, linkContents);
         }
 
         log.info("Bridge called with {} ResourceLinks", currentResourceLinks.size());
@@ -318,11 +318,11 @@ public class ResourceLinkAttachmentSteps {
     public void resourceLinkAddedToGraphState() {
         assertThat(capturedGraphState)
             .as("Graph state should contain attachmentsMeta key")
-            .containsKey(ChatState.ATTACHMENTS_META);
+            .containsKey(AcpState.ATTACHMENTS_META);
 
         @SuppressWarnings("unchecked")
         List<ResourceLinkContent> stateAttachments =
-            (List<ResourceLinkContent>) capturedGraphState.get(ChatState.ATTACHMENTS_META);
+            (List<ResourceLinkContent>) capturedGraphState.get(AcpState.ATTACHMENTS_META);
 
         assertThat(stateAttachments)
             .as("Graph state attachmentsMeta should not be empty")
@@ -335,11 +335,11 @@ public class ResourceLinkAttachmentSteps {
     public void graphStateContainsAttachmentMetadata() {
         assertThat(capturedGraphState)
             .as("Graph state should contain attachmentsMeta key")
-            .containsKey(ChatState.ATTACHMENTS_META);
+            .containsKey(AcpState.ATTACHMENTS_META);
 
         @SuppressWarnings("unchecked")
         List<ResourceLinkContent> stateAttachments =
-            (List<ResourceLinkContent>) capturedGraphState.get(ChatState.ATTACHMENTS_META);
+            (List<ResourceLinkContent>) capturedGraphState.get(AcpState.ATTACHMENTS_META);
 
         assertThat(stateAttachments)
             .as("Graph state attachmentsMeta should not be empty")
@@ -424,11 +424,11 @@ public class ResourceLinkAttachmentSteps {
     public void mimeTypeAvailableToGraphNodes() {
         assertThat(capturedGraphState)
             .as("Graph state should contain attachmentsMeta with mimeType")
-            .containsKey(ChatState.ATTACHMENTS_META);
+            .containsKey(AcpState.ATTACHMENTS_META);
 
         @SuppressWarnings("unchecked")
         List<ResourceLinkContent> stateAttachments =
-            (List<ResourceLinkContent>) capturedGraphState.get(ChatState.ATTACHMENTS_META);
+            (List<ResourceLinkContent>) capturedGraphState.get(AcpState.ATTACHMENTS_META);
 
         assertThat(stateAttachments)
             .as("Graph state should have ResourceLinks with mimeType")
@@ -576,11 +576,11 @@ public class ResourceLinkAttachmentSteps {
     public void graphNodesCanAccessResourceLinkFromState() {
         assertThat(capturedGraphState)
             .as("Graph state should contain attachmentsMeta for nodes to access")
-            .containsKey(ChatState.ATTACHMENTS_META);
+            .containsKey(AcpState.ATTACHMENTS_META);
 
         @SuppressWarnings("unchecked")
         List<ResourceLinkContent> stateAttachments =
-            (List<ResourceLinkContent>) capturedGraphState.get(ChatState.ATTACHMENTS_META);
+            (List<ResourceLinkContent>) capturedGraphState.get(AcpState.ATTACHMENTS_META);
 
         assertThat(stateAttachments)
             .as("Graph nodes should be able to access ResourceLinks from state")
@@ -593,11 +593,11 @@ public class ResourceLinkAttachmentSteps {
     public void resourceLinkAvailableThroughoutGraphExecution() {
         assertThat(capturedGraphState)
             .as("Graph state should maintain attachmentsMeta throughout execution")
-            .containsKey(ChatState.ATTACHMENTS_META);
+            .containsKey(AcpState.ATTACHMENTS_META);
 
         @SuppressWarnings("unchecked")
         List<ResourceLinkContent> stateAttachments =
-            (List<ResourceLinkContent>) capturedGraphState.get(ChatState.ATTACHMENTS_META);
+            (List<ResourceLinkContent>) capturedGraphState.get(AcpState.ATTACHMENTS_META);
 
         assertThat(stateAttachments)
             .as("ResourceLinks should be available throughout graph execution")
@@ -690,7 +690,7 @@ public class ResourceLinkAttachmentSteps {
 
     @Then("subsequent graph operations can access this ResourceLink")
     public void subsequentGraphOperationsCanAccessResourceLink() {
-        assertThat(currentResourceLinks.size()).isGreaterThanOrEqualTo(1);
+        assertThat(currentResourceLinks).hasSizeGreaterThanOrEqualTo(1);
         log.debug("Subsequent graph operations can access ResourceLink");
     }
 

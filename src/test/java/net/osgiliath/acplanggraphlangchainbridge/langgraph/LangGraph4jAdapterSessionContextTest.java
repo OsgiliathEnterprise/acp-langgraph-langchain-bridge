@@ -1,8 +1,10 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph;
 
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
-import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.ChatState;
+import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.bsc.langgraph4j.GraphStateException;
 import org.bsc.langgraph4j.StateGraph;
@@ -54,7 +56,7 @@ class LangGraph4jAdapterSessionContextTest {
         ));
     }
 
-    private static final class CapturingPromptGraph implements PromptGraph<ChatState> {
+    private static final class CapturingPromptGraph implements PromptGraph<AcpState<ChatMessage>> {
         private final AtomicReference<SessionContext> capturedContext;
 
         private CapturingPromptGraph(AtomicReference<SessionContext> capturedContext) {
@@ -62,8 +64,8 @@ class LangGraph4jAdapterSessionContextTest {
         }
 
         @Override
-        public StateGraph<ChatState> buildGraph() throws GraphStateException {
-            return new StateGraph<>(ChatState.SCHEMA, ChatState.serializer())
+        public StateGraph<AcpState<ChatMessage>> buildGraph() throws GraphStateException {
+            return new StateGraph<AcpState<ChatMessage>>(AcpState.SCHEMA, AcpState.serializer())
                 .addNode("capture", node_async(state -> {
                     capturedContext.set(state.sessionContext());
                     return Map.of();
