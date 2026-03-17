@@ -1,5 +1,6 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph.node;
 
+import dev.langchain4j.data.message.ChatMessage;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.message.ResourceLinkContent;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.bsc.langgraph4j.prebuilt.MessagesState;
@@ -19,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AttachmentUnwrapperNodeTest {
 
-    private final AttachmentUnwrapperNode node = new AttachmentUnwrapperNode();
+    private final AttachmentUnwrapperNode<ChatMessage> node = new AttachmentUnwrapperNode<>();
 
     @Test
     void unwrapsAttachmentsAndPreservesOrder(@TempDir Path tempDir) throws IOException {
@@ -30,7 +31,7 @@ class AttachmentUnwrapperNodeTest {
         Files.write(firstFile, firstContent);
         Files.write(secondFile, secondContent);
 
-        AcpState state = new AcpState(Map.of(
+        AcpState<ChatMessage> state = new AcpState<>(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test")),
             AcpState.ATTACHMENTS_META,
@@ -52,7 +53,7 @@ class AttachmentUnwrapperNodeTest {
 
     @Test
     void returnsEmptyAttachmentListWhenMetadataIsMissing() throws IOException {
-        AcpState state = new AcpState(Map.of(
+        AcpState<ChatMessage> state = new AcpState<>(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test"))
         ));
@@ -65,7 +66,7 @@ class AttachmentUnwrapperNodeTest {
     @Test
     void throwsWhenAttachmentFileCannotBeRead() {
         Path missingFile = Path.of("/definitely/missing/file.txt");
-        AcpState state = new AcpState(Map.of(
+        AcpState<ChatMessage> state = new AcpState<>(Map.of(
             MessagesState.MESSAGES_STATE,
             List.of(UserMessage.from("test")),
             AcpState.ATTACHMENTS_META,

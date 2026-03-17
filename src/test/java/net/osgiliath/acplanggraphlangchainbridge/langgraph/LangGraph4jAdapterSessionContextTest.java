@@ -1,7 +1,6 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph;
 
 import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.graph.PromptGraph;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
@@ -34,6 +33,7 @@ class LangGraph4jAdapterSessionContextTest {
             new AcpAgentSupportBridge.TokenConsumer() {
                 @Override
                 public void onNext(String token) {
+                    // Completed step is the interesting one
                 }
 
                 @Override

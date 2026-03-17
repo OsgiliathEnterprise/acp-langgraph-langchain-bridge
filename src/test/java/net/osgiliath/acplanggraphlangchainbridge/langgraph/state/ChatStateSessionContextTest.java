@@ -1,5 +1,6 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph.state;
 
+import dev.langchain4j.data.message.ChatMessage;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -11,7 +12,7 @@ class ChatStateSessionContextTest {
     @Test
     void exposesSessionContextValuesFromState() {
         SessionContext sessionContext = SessionContext.of("session-123", "/workspace", Map.of("mcp-a", "http://localhost:3000"));
-        AcpState state = new AcpState(Map.of(AcpState.SESSION_CONTEXT, sessionContext));
+        AcpState<ChatMessage> state = new AcpState<>(Map.of(AcpState.SESSION_CONTEXT, sessionContext));
 
         assertThat(state.sessionContext()).isEqualTo(sessionContext);
         assertThat(state.sessionId()).isEqualTo("session-123");
@@ -21,7 +22,7 @@ class ChatStateSessionContextTest {
 
     @Test
     void fallsBackToEmptySessionContextWhenMissing() {
-        AcpState state = new AcpState(Map.of());
+        AcpState<ChatMessage> state = new AcpState<>(Map.of());
 
         assertThat(state.sessionContext()).isEqualTo(SessionContext.empty());
         assertThat(state.sessionId()).isEmpty();

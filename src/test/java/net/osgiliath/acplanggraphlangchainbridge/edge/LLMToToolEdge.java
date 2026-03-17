@@ -2,7 +2,6 @@ package net.osgiliath.acplanggraphlangchainbridge.edge;
 
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.AcpState;
 import org.bsc.langgraph4j.action.EdgeAction;
 import org.slf4j.Logger;
