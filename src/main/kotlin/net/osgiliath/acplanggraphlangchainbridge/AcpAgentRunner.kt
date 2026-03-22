@@ -22,9 +22,11 @@ import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge
+import net.osgiliath.acplanggraphlangchainbridge.acp.InAcpAdapter
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
+import java.util.UUID
 import java.util.stream.Collectors
 
 /**
@@ -33,14 +35,18 @@ import java.util.stream.Collectors
  */
 @Component
 class AcpAgentRunner(
-    private val agentSupportBridge: AcpAgentSupportBridge
+    private val agentSupportBridge: InAcpAdapter
 ) : CommandLineRunner {
+
+    companion object {
+        internal const val PROMPT_FLOW_BUFFER_CAPACITY: Int = Channel.BUFFERED
+    }
 
     private val log = LoggerFactory.getLogger(AcpAgentRunner::class.java)
 
     override fun run(vararg args: String?) {
         log.info("Starting ACP Agent Runner using official SDK")
-        
+
         runBlocking {
             val transport = StdioTransport(
                 parentScope = this,
@@ -49,29 +55,13 @@ class AcpAgentRunner(
                 output = System.out.asSink().buffered()
             )
             val protocol = Protocol(this, transport)
-            
-            val agentSupport = object : AgentSupport {
-                override suspend fun initialize(clientInfo: com.agentclientprotocol.client.ClientInfo): AgentInfo {
-                    val agentInfo = agentSupportBridge.agentInfo
-                    return AgentInfo(
-                        implementation = Implementation(agentInfo.name, agentInfo.version)
-                    )
-                }
 
-                override suspend fun createSession(sessionParameters: SessionCreationParameters): AgentSession {
-                    val javaSession = agentSupportBridge.createSession(
-                        "default-session", 
-                        sessionParameters.cwd,
-                        emptyMap()
-                    )
-                    return BridgeAgentSession(javaSession)
-                }
-            }
+            val agentSupport = createAgentSupport()
 
             Agent(protocol, agentSupport)
             protocol.start()
             log.info("Agent started, waiting for requests on stdin...")
-            
+
             // Keep the transport alive until it's closed
             val deferred = CompletableDeferred<Unit>()
             transport.onClose { deferred.complete(Unit) }
@@ -79,12 +69,63 @@ class AcpAgentRunner(
         }
     }
 
+    internal fun createAgentSupport(): AgentSupport = object : AgentSupport {
+        override suspend fun initialize(clientInfo: com.agentclientprotocol.client.ClientInfo): AgentInfo {
+            val agentInfo = agentSupportBridge.agentInfo
+            return AgentInfo(
+                protocolVersion = LATEST_PROTOCOL_VERSION,
+                capabilities = AgentCapabilities(loadSession = true),
+                implementation = Implementation(agentInfo.name, agentInfo.version)
+            )
+        }
+
+        override suspend fun createSession(sessionParameters: SessionCreationParameters): AgentSession {
+            val javaSession = createJavaSession(generateSessionId(), sessionParameters)
+            return createBridgeAgentSession(javaSession)
+        }
+
+        override suspend fun loadSession(
+            sessionId: SessionId,
+            sessionParameters: SessionCreationParameters
+        ): AgentSession {
+            val javaSession = createJavaSession(sessionId.value, sessionParameters)
+            return createBridgeAgentSession(javaSession)
+        }
+    }
+
+    internal fun createBridgeAgentSession(acpSession: AcpAgentSupportBridge.AcpSessionBridge): AgentSession =
+        BridgeAgentSession(acpSession)
+
+    private fun createJavaSession(
+        sessionId: String,
+        sessionParameters: SessionCreationParameters
+    ): AcpAgentSupportBridge.AcpSessionBridge {
+        log.info("Creating Java session $sessionId")
+        log.debug("Session parameters: cwd=${sessionParameters.cwd}, mcpServers=${sessionParameters.mcpServers}")
+        return agentSupportBridge.createSession(
+            sessionId,
+            sessionParameters.cwd,
+            sessionParameters.mcpServers.associate { server ->
+                server.name to when (server) {
+                    is McpServer.Stdio -> server.command
+                    is McpServer.Http -> server.url
+                    is McpServer.Sse -> server.url
+                }
+            }
+        )
+    }
+
+    private fun generateSessionId(): String = "session-${UUID.randomUUID()}"
+
     private inner class BridgeAgentSession(
         private val acpSession: AcpAgentSupportBridge.AcpSessionBridge
     ) : AgentSession {
         override val sessionId: SessionId = SessionId(acpSession.sessionId)
 
-        override suspend fun prompt(content: List<ContentBlock>, _meta: kotlinx.serialization.json.JsonElement?): Flow<Event> = callbackFlow {
+        override suspend fun prompt(
+            content: List<ContentBlock>,
+            _meta: kotlinx.serialization.json.JsonElement?
+        ): Flow<Event> = callbackFlow {
             log.trace("Agent prompt started")
             log.debug("Content blocks received: ${content.size} for session ${acpSession.sessionId}")
             if (log.isDebugEnabled) {
@@ -97,8 +138,7 @@ class AcpAgentRunner(
             val promptText = content.filterIsInstance<ContentBlock.Text>()
                 .joinToString("\n") { it.text }
             val promtResourceLinks = content.filterIsInstance<ContentBlock.ResourceLink>()
-            log.debug("Prompt resource links received: $promtResourceLinks")
-
+            log.debug("Prompt resource links received: {}", promtResourceLinks)
             log.info("Processing streaming prompt for session ${acpSession.sessionId}")
 
             // Launch the blocking streamPrompt call on Dispatchers.IO so it
@@ -130,6 +170,10 @@ class AcpAgentRunner(
             awaitClose {
                 log.debug("Streaming prompt flow closed for session ${acpSession.sessionId}")
             }
-        }.buffer(Channel.UNLIMITED)
+        }.buffer(PROMPT_FLOW_BUFFER_CAPACITY)
+
+        override suspend fun cancel() {
+            acpSession.cancel()
+        }
     }
 }

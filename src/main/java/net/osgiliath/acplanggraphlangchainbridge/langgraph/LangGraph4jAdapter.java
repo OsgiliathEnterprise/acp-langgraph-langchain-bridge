@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Adapter - Bridges Koog ACP facade with LangChain4j orchestrator.
@@ -72,13 +73,29 @@ public class LangGraph4jAdapter {
     public void streamPrompt(String promptText,
                              List<ContentBlock.ResourceLink> resourceLinks,
                              AcpAgentSupportBridge.TokenConsumer consumer) {
-        streamPrompt(SessionContext.empty(), promptText, resourceLinks, consumer);
+        streamPrompt(SessionContext.empty(), promptText, resourceLinks, consumer, new AtomicBoolean(false));
     }
 
     public void streamPrompt(SessionContext sessionContext,
                              String promptText,
                              List<ContentBlock.ResourceLink> resourceLinks,
                              AcpAgentSupportBridge.TokenConsumer consumer) {
+        streamPrompt(sessionContext, promptText, resourceLinks, consumer, new AtomicBoolean(false));
+    }
+
+    /**
+     * Cancellation-aware variant. The graph iteration loop will exit early and call
+     * {@code consumer.onComplete()} as soon as {@code cancelled} is set to {@code true}.
+     *
+     * @param cancelled the session-scoped {@link AtomicBoolean} that signals cancellation.
+     *                  Must not be {@code null}; use {@code new AtomicBoolean(false)} when
+     *                  cancellation is not required.
+     */
+    public void streamPrompt(SessionContext sessionContext,
+                             String promptText,
+                             List<ContentBlock.ResourceLink> resourceLinks,
+                             AcpAgentSupportBridge.TokenConsumer consumer,
+                             AtomicBoolean cancelled) {
         SessionContext effectiveSessionContext = sessionContext == null ? SessionContext.empty() : sessionContext;
         String safePromptText = promptText == null ? "" : promptText;
         log.debug("Adapter streaming prompt for session {} in cwd {}: {}...",
@@ -137,7 +154,12 @@ public class LangGraph4jAdapter {
             // with NodeOutput (state snapshots). We forward only the chunks.
             var states = app.stream(initialState);
 
-            states.forEach(nodeOutput -> {
+            for (var nodeOutput : states) {
+                if (cancelled.get()) {
+                    log.info("Streaming cancelled for session {}", effectiveSessionContext.sessionId());
+                    consumer.onComplete();
+                    return;
+                }
                 if (nodeOutput instanceof StreamingOutput<AcpState<ChatMessage>> streamingOutput) {
                     var chunk = streamingOutput.chunk();
                     if (chunk != null && !chunk.isEmpty()) {
@@ -145,7 +167,7 @@ public class LangGraph4jAdapter {
                     }
                 }
                 // Regular NodeOutput → state snapshot, nothing to forward
-            });
+            }
 
             consumer.onComplete();
         } catch (Throwable t) {

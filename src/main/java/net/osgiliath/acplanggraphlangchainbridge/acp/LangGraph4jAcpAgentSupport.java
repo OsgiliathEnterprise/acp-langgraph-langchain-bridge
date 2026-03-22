@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Java implementation of ACP Agent logic using LangChain4j.
@@ -40,13 +41,32 @@ public class LangGraph4jAcpAgentSupport implements InAcpAdapter {
         return new LangChain4jSession(sessionContext, adapter);
     }
 
-    private record LangChain4jSession(SessionContext sessionContext, LangGraph4jAdapter adapter) implements AcpSessionBridge {
+    private static final class LangChain4jSession implements AcpSessionBridge {
+
+        private final SessionContext sessionContext;
+        private final LangGraph4jAdapter adapter;
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
+        LangChain4jSession(SessionContext sessionContext, LangGraph4jAdapter adapter) {
+            this.sessionContext = sessionContext;
+            this.adapter = adapter;
+        }
 
         @Override
         public String getSessionId() {
             return sessionContext.sessionId();
         }
 
+        @Override
+        public AtomicBoolean cancelledFlag() {
+            return cancelled;
+        }
+
+        @Override
+        public void cancel() {
+            log.info("Cancellation requested for session {}", sessionContext.sessionId());
+            cancelledFlag().set(true);
+        }
 
         @Override
         public CompletableFuture<String> processPrompt(String promptText, List<ContentBlock.ResourceLink> resourceLinks) {
@@ -71,11 +91,10 @@ public class LangGraph4jAcpAgentSupport implements InAcpAdapter {
             return future;
         }
 
-
         @Override
         public void streamPrompt(String promptText, List<ContentBlock.ResourceLink> resourceLinks, TokenConsumer consumer) {
             try {
-                adapter.streamPrompt(sessionContext, promptText, resourceLinks, consumer);
+                adapter.streamPrompt(sessionContext, promptText, resourceLinks, consumer, cancelled);
             } catch (Exception e) {
                 consumer.onError(e);
             }
