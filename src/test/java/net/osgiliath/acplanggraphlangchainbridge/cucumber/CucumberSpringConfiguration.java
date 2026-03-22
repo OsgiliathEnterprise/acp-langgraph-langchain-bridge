@@ -13,6 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Cucumber Spring configuration that sets up the Spring Boot context for BDD tests.
@@ -46,9 +47,16 @@ public class CucumberSpringConfiguration {
             @Override
             public AcpSessionBridge createSession(String sessionId, String cwd, Map<String, String> mcpServers) {
                 return new AcpSessionBridge() {
+                    private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
                     @Override
                     public String getSessionId() {
                         return sessionId;
+                    }
+
+                    @Override
+                    public AtomicBoolean cancelledFlag() {
+                        return cancelled;
                     }
 
                     @Override
