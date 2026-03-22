@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge
+import net.osgiliath.acplanggraphlangchainbridge.acp.InAcpAdapter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -71,7 +72,14 @@ class AcpAgentRunnerParityTest {
         val runner = AcpAgentRunner(bridge)
         val sessionParameters = SessionCreationParameters(
             cwd = "/workspace/load",
-            mcpServers = listOf(McpServer.Stdio(name = "repo-tools", command = "repo-tools", args = emptyList(), env = emptyList()))
+            mcpServers = listOf(
+                McpServer.Stdio(
+                    name = "repo-tools",
+                    command = "repo-tools",
+                    args = emptyList(),
+                    env = emptyList()
+                )
+            )
         )
 
         val session = runner.createAgentSupport().loadSession(SessionId("existing-session"), sessionParameters)
@@ -123,13 +131,17 @@ class AcpAgentRunnerParityTest {
 
     private class RecordingBridge(
         private val fixedSession: RecordingSession? = null
-    ) : AcpAgentSupportBridge {
+    ) : InAcpAdapter {
         val createdSessions = mutableListOf<CreatedSession>()
 
         override fun getAgentInfo(): AcpAgentSupportBridge.AgentInfoBridge =
             AcpAgentSupportBridge.AgentInfoBridge("BridgeAgent", "9.9.9")
 
-        override fun createSession(sessionId: String, cwd: String, mcpServers: Map<String, String>): AcpAgentSupportBridge.AcpSessionBridge {
+        override fun createSession(
+            sessionId: String,
+            cwd: String,
+            mcpServers: Map<String, String>
+        ): AcpAgentSupportBridge.AcpSessionBridge {
             createdSessions += CreatedSession(sessionId, cwd, mcpServers)
             return fixedSession ?: RecordingSession(sessionId)
         }

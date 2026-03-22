@@ -22,6 +22,7 @@ import kotlinx.io.asSink
 import kotlinx.io.asSource
 import kotlinx.io.buffered
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge
+import net.osgiliath.acplanggraphlangchainbridge.acp.InAcpAdapter
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.stereotype.Component
@@ -34,7 +35,7 @@ import java.util.stream.Collectors
  */
 @Component
 class AcpAgentRunner(
-    private val agentSupportBridge: AcpAgentSupportBridge
+    private val agentSupportBridge: InAcpAdapter
 ) : CommandLineRunner {
 
     companion object {
