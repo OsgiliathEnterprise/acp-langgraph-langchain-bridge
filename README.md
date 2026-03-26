@@ -3,7 +3,7 @@
 ![Maven Central Version](https://img.shields.io/maven-central/v/net.osgiliath.ai/acp-langraph-langchain-bridge)
 
 
-A Spring Boot application that bridges the **JetBrains Agent Client Protocol (ACP)** with **LangChain4j** and **LangGraph4j**, enabling any ACP-compatible IDE (e.g. JetBrains IDEs) to interact with a LangChain4j-powered AI agent over standard I/O.
+A Spring Boot library module that bridges the **Agent Client Protocol (ACP)** with **LangChain4j** and **LangGraph4j**, enabling ACP-compatible IDEs/clients to interact with a LangChain4j-powered AI agent over standard I/O.
 
 ## Overview
 
@@ -12,13 +12,13 @@ A Spring Boot application that bridges the **JetBrains Agent Client Protocol (AC
 │  ACP Client  │ ◄──────────────────► │  acp-langraph-langchain-bridge                │
 │  (IDE / CLI) │                      │                                               │
 └──────────────┘                      │  ┌─────────────────┐   ┌──────────────────┐   │
-                                      │  │ AcpAgentRunner   │──►│ LangChain4j      │   │
-                                      │  │ (Kotlin, ACP SDK)│   │ AgentSupport     │   │
+                                      │  │ AcpAgentRunner   │──►│ LangGraph4j      │   │
+                                      │  │ (Kotlin, ACP SDK)│   │ AcpAgentSupport  │   │
                                       │  └────────┬────────┘   └────────┬─────────┘   │
                                       │           │                     │              │
                                       │           ▼                     ▼              │
                                       │  ┌─────────────────┐   ┌──────────────────┐   │
-                                      │  │ Koog ACP SDK     │   │ LangGraph4jAdapter│   │
+                                      │  │ ACP SDK          │   │ LangGraph4jAdapter│   │
                                       │  │ (protocol layer) │   │ (orchestrator)   │   │
                                       │  └─────────────────┘   └────────┬─────────┘   │
                                       │                                 │              │
@@ -34,8 +34,8 @@ The bridge has two clearly separated halves:
 
 | Layer | Language | Responsibility |
 |---|---|---|
-| **ACP transport** (`AcpAgentRunner`) | Kotlin | Speaks the ACP protocol over stdio using the official JetBrains ACP SDK. Translates ACP session/prompt events into calls on the Java side. |
-| **Agent orchestration** (`LangChain4jAgentSupport` → `LangGraph4jAdapter` → `PromptGraph`) | Java | Runs the actual LLM agent logic using LangChain4j models and a LangGraph4j state graph. Streams tokens back through a callback interface. |
+| **ACP transport** (`AcpAgentRunner`) | Kotlin | Speaks the ACP protocol over stdio using the official ACP SDK. Translates ACP session/prompt events into calls on the Java side. |
+| **Agent orchestration** (`LangGraph4jAcpAgentSupport` → `LangGraph4jAdapter` → `PromptGraph`) | Java | Runs the actual LLM agent logic using LangChain4j models and a LangGraph4j state graph. Streams tokens back through a callback interface. |
 
 ## Key Components
 
@@ -55,7 +55,7 @@ Defines the contract between the Kotlin ACP layer and the Java agent layer:
 - **`createSession(sessionId, cwd, mcpServers)`** – creates a new session.
 - **`AcpSessionBridge`** – per-session interface with `processPrompt()` (async, non-streaming) and `streamPrompt()` (streaming via `TokenConsumer` callbacks).
 
-### `LangChain4jAgentSupport` (Java)
+### `LangGraph4jAcpAgentSupport` (Java)
 
 Spring `@Component` implementing `AcpAgentSupportBridge`. Creates sessions backed by the `LangGraph4jAdapter`. The non-streaming `processPrompt()` is internally built on top of `streamPrompt()`, accumulating tokens into a single `CompletableFuture<String>`.
 
@@ -74,7 +74,7 @@ The core orchestrator. For each prompt it:
 
 Abstraction for the LangGraph4j state graph definition. Implementations wire up nodes (e.g. an *agent* node that calls an LLM, a *tools* node) and conditional edges (e.g. route back to the agent when tool calls are requested, or route to `END`).
 
-### `ChatState` (Java)
+### `AcpState` (Java)
 
 Extends LangGraph4j's `MessagesState<ChatMessage>`, carrying the conversation history through the graph. Includes a serializer for state persistence and an optional `next` field used for routing decisions.
 
@@ -114,11 +114,11 @@ ACP Client ◄──PromptResponse────AcpAgentRunner
 | Technology | Version | Purpose |
 |---|---|---|
 | **Java** | 21 | Primary language for agent logic |
-| **Kotlin** | 2.1.10 | ACP SDK integration (required by Koog SDK) |
-| **Spring Boot** | 3.4.2 | Dependency injection, application lifecycle |
-| **JetBrains ACP SDK** (`com.agentclientprotocol:acp`) | 0.15.3 | Official Agent Client Protocol implementation |
-| **LangChain4j** | 1.11.0 | LLM abstraction (chat models, tools, memory) |
-| **LangGraph4j** | 1.8.3 | Stateful agent graph orchestration |
+| **Kotlin** | 2.2.20 | ACP SDK integration |
+| **Spring Boot** | 3.5.11 | Dependency injection, application lifecycle |
+| **ACP SDK** (`com.agentclientprotocol:acp`) | 0.17.0 | Agent Client Protocol implementation |
+| **LangChain4j** | 1.12.2 | LLM abstraction (chat models, tools, memory) |
+| **LangGraph4j** | 1.8.10 | Stateful agent graph orchestration |
 | **OpenAI (via LangChain4j)** | — | Default LLM provider |
 
 ## Useful Commands
@@ -187,17 +187,13 @@ Run analysis and wait for quality gate:
 ./gradlew dependencyCheckAnalyze --stacktrace
 ```
 
-### Run Bridge Over STDIO
+### Run Bridge Over STDIO (via consuming app)
 
 ```bash
-./gradlew bootRun --stacktrace
+./gradlew :codeprompt:bootRun --stacktrace
 ```
 
-Or run packaged artifact:
-
-```bash
-java -jar build/libs/acp-langraph-langchain-bridge-1.0-SNAPSHOT.jar
-```
+This module is published as a library (`bootJar` is disabled and `jar` is enabled), so run it through a consuming Spring Boot app (such as `codeprompt`) or your own app wiring this bridge.
 
 ### Publish
 
@@ -233,7 +229,7 @@ To plug in your own agent logic, implement the `PromptGraph` interface and regis
 @Component
 public class MyGraph implements PromptGraph {
     @Override
-    public StateGraph<ChatState> buildGraph() throws GraphStateException {
+    public StateGraph<AcpState> buildGraph() throws GraphStateException {
         // Define nodes, edges, and conditional routing
     }
 }
