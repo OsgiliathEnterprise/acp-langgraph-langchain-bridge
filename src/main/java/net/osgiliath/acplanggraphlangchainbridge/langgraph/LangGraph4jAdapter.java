@@ -196,7 +196,7 @@ public class LangGraph4jAdapter {
 
             if (processResponse(consumer, cancelled, states, effectiveSessionContext)) return;
 
-        } catch (Exception t) {
+        } catch (Throwable t) {
             log.warn("Prompt streaming failed for session {}", effectiveSessionContext.sessionId(), t);
             consumer.onError(t);
         }
