@@ -37,20 +37,25 @@ public class AttachmentUnwrapperNode<T> implements NodeAction<AcpState<T>> {
 
     /**
      * Processes the attachment metadata from the given chat state, reads the corresponding files, and returns a map containing the byte content of the attachments
+     *
      * @param state the current chat state containing messages and attachment metadata
      * @return a map with the key {@code ChatState.ATTACHMENTS_SCHEMA} mapping to a list of byte arrays representing the content of the attachments
      * @throws IOException if there is an error reading any of the attachment files
      */
     @Override
     public Map<String, Object> apply(AcpState<T> state) throws IOException {
-        log.debug("Unwrapping attachments for session {} question: {} with attachments: {}",
-            state.sessionId(),
-            state.messages(),
-            state.attachmentsMetadata());
+        if (log.isDebugEnabled()) {
+            log.debug("Unwrapping attachments for session {} question: {} with attachments: {}",
+                    state.sessionId(),
+                    state.messages(),
+                    state.attachmentsMetadata());
+        }
         List<byte[]> attachments = new ArrayList<>();
         List<ResourceLinkContent> metadataList = state.attachmentsMetadata();
         for (ResourceLinkContent metadata : metadataList) {
-            log.debug("Evaluating attachment metadata for session {}: {}", state.sessionId(), metadata);
+            if (log.isDebugEnabled()) {
+                log.debug("Evaluating attachment metadata for session {}: {}", state.sessionId(), metadata);
+            }
             URI filePath = metadata.uri();
             Path path = Paths.get(filePath);
 
