@@ -91,6 +91,7 @@ class LangGraph4jAdapterCancellationTest {
                 new AcpAgentSupportBridge.TokenConsumer() {
                     @Override
                     public void onNext(String token) {
+                        // no tokens expected from noop graph, but if there were any this would be the place to check them
                     }
 
                     @Override

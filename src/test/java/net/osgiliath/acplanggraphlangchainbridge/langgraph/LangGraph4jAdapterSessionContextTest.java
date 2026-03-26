@@ -21,38 +21,38 @@ import static org.bsc.langgraph4j.action.AsyncNodeAction.node_async;
 class LangGraph4jAdapterSessionContextTest {
 
     @Test
-    void seedsInitialGraphStateWithSessionContext() throws GraphStateException {
+    void seedsInitialGraphStateWithSessionContext() {
         AtomicReference<SessionContext> capturedContext = new AtomicReference<>();
         LangGraph4jAdapter adapter = new LangGraph4jAdapter(new CapturingPromptGraph(capturedContext));
         AtomicBoolean completed = new AtomicBoolean(false);
 
         adapter.streamPrompt(
-            SessionContext.of("session-777", "/workspace/demo", Map.of("mcp-a", "stdio://server")),
-            "hello graph",
-            java.util.List.of(),
-            new AcpAgentSupportBridge.TokenConsumer() {
-                @Override
-                public void onNext(String token) {
-                    // Completed step is the interesting one
-                }
+                SessionContext.of("session-777", "/workspace/demo", Map.of("mcp-a", "stdio://server")),
+                "hello graph",
+                java.util.List.of(),
+                new AcpAgentSupportBridge.TokenConsumer() {
+                    @Override
+                    public void onNext(String token) {
+                        // Completed step is the interesting one
+                    }
 
-                @Override
-                public void onComplete() {
-                    completed.set(true);
-                }
+                    @Override
+                    public void onComplete() {
+                        completed.set(true);
+                    }
 
-                @Override
-                public void onError(Throwable error) {
-                    throw new AssertionError(error);
+                    @Override
+                    public void onError(Throwable error) {
+                        throw new AssertionError(error);
+                    }
                 }
-            }
         );
 
         assertThat(completed).isTrue();
         assertThat(capturedContext.get()).isEqualTo(SessionContext.of(
-            "session-777",
-            "/workspace/demo",
-            Map.of("mcp-a", "stdio://server")
+                "session-777",
+                "/workspace/demo",
+                Map.of("mcp-a", "stdio://server")
         ));
     }
 
@@ -66,12 +66,12 @@ class LangGraph4jAdapterSessionContextTest {
         @Override
         public StateGraph<AcpState<ChatMessage>> buildGraph() throws GraphStateException {
             return new StateGraph<AcpState<ChatMessage>>(AcpState.SCHEMA, AcpState.serializer())
-                .addNode("capture", node_async(state -> {
-                    capturedContext.set(state.sessionContext());
-                    return Map.of();
-                }))
-                .addEdge(START, "capture")
-                .addEdge("capture", END);
+                    .addNode("capture", node_async(state -> {
+                        capturedContext.set(state.sessionContext());
+                        return Map.of();
+                    }))
+                    .addEdge(START, "capture")
+                    .addEdge("capture", END);
         }
     }
 }
