@@ -43,23 +43,34 @@ class LangGraph4jAdapterCancellationTest {
         AtomicBoolean cancelled = new AtomicBoolean(true); // already cancelled
 
         adapter.streamPrompt(
-            SessionContext.of("session-cancel", "/tmp", Map.of()),
-            "this prompt should not produce tokens",
-            List.of(),
-            new AcpAgentSupportBridge.TokenConsumer() {
-                @Override public void onNext(String token) { tokens.add(token); }
-                @Override public void onComplete()         { completeCount.incrementAndGet(); }
-                @Override public void onError(Throwable e) { throw new AssertionError("Unexpected error", e); }
-            },
-            cancelled
+                SessionContext.of("session-cancel", "/tmp", Map.of()),
+                "this prompt should not produce tokens",
+                List.of(),
+                new AcpAgentSupportBridge.TokenConsumer() {
+                    @Override
+                    public void onNext(String token) {
+                        tokens.add(token);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        completeCount.incrementAndGet();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        throw new AssertionError("Unexpected error", e);
+                    }
+                },
+                cancelled
         );
 
         assertThat(tokens)
-            .as("no tokens should be delivered when the session is pre-cancelled")
-            .isEmpty();
+                .as("no tokens should be delivered when the session is pre-cancelled")
+                .isEmpty();
         assertThat(completeCount.get())
-            .as("onComplete() must be called exactly once even when cancelled")
-            .isEqualTo(1);
+                .as("onComplete() must be called exactly once even when cancelled")
+                .isEqualTo(1);
     }
 
     // -----------------------------------------------------------------------
@@ -74,20 +85,30 @@ class LangGraph4jAdapterCancellationTest {
         AtomicBoolean cancelled = new AtomicBoolean(false); // not cancelled
 
         adapter.streamPrompt(
-            SessionContext.of("session-not-cancelled", "/tmp", Map.of()),
-            "normal prompt",
-            List.of(),
-            new AcpAgentSupportBridge.TokenConsumer() {
-                @Override public void onNext(String token) {}
-                @Override public void onComplete()         { completed.set(true); }
-                @Override public void onError(Throwable e) { throw new AssertionError("Unexpected error", e); }
-            },
-            cancelled
+                SessionContext.of("session-not-cancelled", "/tmp", Map.of()),
+                "normal prompt",
+                List.of(),
+                new AcpAgentSupportBridge.TokenConsumer() {
+                    @Override
+                    public void onNext(String token) {
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        completed.set(true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        throw new AssertionError("Unexpected error", e);
+                    }
+                },
+                cancelled
         );
 
         assertThat(completed)
-            .as("onComplete() must be reached when cancelled flag starts as false")
-            .isTrue();
+                .as("onComplete() must be reached when cancelled flag starts as false")
+                .isTrue();
     }
 
     // -----------------------------------------------------------------------
@@ -111,7 +132,7 @@ class LangGraph4jAdapterCancellationTest {
         AtomicBoolean cancelled = new AtomicBoolean(false);
         LangGraph4jAdapter adapter = new LangGraph4jAdapter(new TwoNodeGraph());
 
-        AtomicInteger onNextCount  = new AtomicInteger(0);
+        AtomicInteger onNextCount = new AtomicInteger(0);
         AtomicInteger completeCount = new AtomicInteger(0);
 
         // Set cancelled from a separate thread slightly before we start,
@@ -122,50 +143,65 @@ class LangGraph4jAdapterCancellationTest {
         canceller.join(500);
 
         adapter.streamPrompt(
-            SessionContext.of("session-concurrent-cancel", "/tmp", Map.of()),
-            "two-node prompt",
-            List.of(),
-            new AcpAgentSupportBridge.TokenConsumer() {
-                @Override public void onNext(String token)  { onNextCount.incrementAndGet(); }
-                @Override public void onComplete()          { completeCount.incrementAndGet(); }
-                @Override public void onError(Throwable e)  { throw new AssertionError("Unexpected error", e); }
-            },
-            cancelled
+                SessionContext.of("session-concurrent-cancel", "/tmp", Map.of()),
+                "two-node prompt",
+                List.of(),
+                new AcpAgentSupportBridge.TokenConsumer() {
+                    @Override
+                    public void onNext(String token) {
+                        onNextCount.incrementAndGet();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        completeCount.incrementAndGet();
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        throw new AssertionError("Unexpected error", e);
+                    }
+                },
+                cancelled
         );
 
         assertThat(completeCount.get())
-            .as("onComplete() must be called exactly once regardless of cancellation timing")
-            .isEqualTo(1);
+                .as("onComplete() must be called exactly once regardless of cancellation timing")
+                .isEqualTo(1);
         assertThat(onNextCount.get())
-            .as("no StreamingOutput chunks expected from noop graph nodes")
-            .isEqualTo(0);
+                .as("no StreamingOutput chunks expected from noop graph nodes")
+                .isZero();
     }
 
     // -----------------------------------------------------------------------
     // Helper graphs
     // -----------------------------------------------------------------------
 
-    /** Single-node graph that does nothing; used to drive ≥1 loop iteration. */
+    /**
+     * Single-node graph that does nothing; used to drive ≥1 loop iteration.
+     */
     private static final class SimpleNoopGraph implements PromptGraph<AcpState<ChatMessage>> {
         @Override
         public StateGraph<AcpState<ChatMessage>> buildGraph() throws GraphStateException {
             return new StateGraph<AcpState<ChatMessage>>(AcpState.SCHEMA, AcpState.serializer())
-                .addNode("noop", node_async(state -> Map.of()))
-                .addEdge(START, "noop")
-                .addEdge("noop", END);
+                    .addNode("noop", node_async(state -> Map.of()))
+                    .addEdge(START, "noop")
+                    .addEdge("noop", END);
         }
     }
 
-    /** Two-node graph that drives ≥2 loop iterations. */
+    /**
+     * Two-node graph that drives ≥2 loop iterations.
+     */
     private static final class TwoNodeGraph implements PromptGraph<AcpState<ChatMessage>> {
         @Override
         public StateGraph<AcpState<ChatMessage>> buildGraph() throws GraphStateException {
             return new StateGraph<AcpState<ChatMessage>>(AcpState.SCHEMA, AcpState.serializer())
-                .addNode("first",  node_async(state -> Map.of()))
-                .addNode("second", node_async(state -> Map.of()))
-                .addEdge(START,   "first")
-                .addEdge("first", "second")
-                .addEdge("second", END);
+                    .addNode("first", node_async(state -> Map.of()))
+                    .addNode("second", node_async(state -> Map.of()))
+                    .addEdge(START, "first")
+                    .addEdge("first", "second")
+                    .addEdge("second", END);
         }
     }
 }
