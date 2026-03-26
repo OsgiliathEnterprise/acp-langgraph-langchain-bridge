@@ -1,7 +1,5 @@
 package net.osgiliath.acplanggraphlangchainbridge.it;
 
-import com.agentclientprotocol.model.ContentBlock;
-import com.agentclientprotocol.model.ResourceLink;
 import net.osgiliath.acplanggraphlangchainbridge.AcpLangGraphLangChainBridgeApplication;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
@@ -10,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,8 +17,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@SpringBootTest(classes = AcpLangGraphLangChainBridgeApplication.class,properties = {
-    "spring.main.web-application-type=none"
+@SpringBootTest(classes = AcpLangGraphLangChainBridgeApplication.class, properties = {
+        "spring.main.web-application-type=none"
 })
 class LangChain4jAdapterIT {
     @Autowired
@@ -81,5 +80,5 @@ class LangChain4jAdapterIT {
         await().atMost(5, SECONDS).untilTrue(completed);
         assertThat(response.get()).isEqualTo("Please provide a prompt.");
     }
-    
+
 }

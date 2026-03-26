@@ -1,6 +1,5 @@
 package net.osgiliath.acplanggraphlangchainbridge.acp;
 
-import com.agentclientprotocol.model.ContentBlock;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.LangGraph4jAdapter;
 import net.osgiliath.acplanggraphlangchainbridge.langgraph.state.SessionContext;
 import org.junit.jupiter.api.Test;
@@ -32,13 +31,36 @@ class LangGraph4jAcpAgentSupportCancellationTest {
     // Test 1 – cancel() before streamPrompt: adapter receives a pre-set flag
     // -----------------------------------------------------------------------
 
+    private static AcpAgentSupportBridge.TokenConsumer noopConsumer() {
+        return new AcpAgentSupportBridge.TokenConsumer() {
+            @Override
+            public void onNext(String token) {
+                // no-op
+            }
+
+            @Override
+            public void onComplete() {
+                // no-op
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                // no-op
+            }
+        };
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 2 – cancel() is session-scoped: a second session is not affected
+    // -----------------------------------------------------------------------
+
     @Test
     void cancelBeforeStreamingPassesTrueFlagToAdapter() {
         LangGraph4jAdapter adapter = mock(LangGraph4jAdapter.class);
         LangGraph4jAcpAgentSupport support = new LangGraph4jAcpAgentSupport(adapter);
 
         AcpAgentSupportBridge.AcpSessionBridge session =
-            support.createSession("session-pre-cancel", "/workspace", Map.of());
+                support.createSession("session-pre-cancel", "/workspace", Map.of());
 
         // Cancel before any prompt is sent
         session.cancel();
@@ -47,23 +69,23 @@ class LangGraph4jAcpAgentSupportCancellationTest {
         session.streamPrompt("hello", List.of(), noopConsumer());
 
         ArgumentCaptor<AtomicBoolean> cancelledCaptor =
-            ArgumentCaptor.forClass(AtomicBoolean.class);
+                ArgumentCaptor.forClass(AtomicBoolean.class);
 
         verify(adapter).streamPrompt(
-            any(SessionContext.class),
-            any(String.class),
-            any(List.class),
-            any(AcpAgentSupportBridge.TokenConsumer.class),
-            cancelledCaptor.capture()
+                any(SessionContext.class),
+                any(String.class),
+                any(List.class),
+                any(AcpAgentSupportBridge.TokenConsumer.class),
+                cancelledCaptor.capture()
         );
 
         assertThat(cancelledCaptor.getValue().get())
-            .as("the AtomicBoolean passed to the adapter must be true after cancel()")
-            .isTrue();
+                .as("the AtomicBoolean passed to the adapter must be true after cancel()")
+                .isTrue();
     }
 
     // -----------------------------------------------------------------------
-    // Test 2 – cancel() is session-scoped: a second session is not affected
+    // Test 3 – cancel() during streaming: flag is visible to a concurrent reader
     // -----------------------------------------------------------------------
 
     @Test
@@ -72,32 +94,32 @@ class LangGraph4jAcpAgentSupportCancellationTest {
         LangGraph4jAcpAgentSupport support = new LangGraph4jAcpAgentSupport(adapter);
 
         AcpAgentSupportBridge.AcpSessionBridge sessionA =
-            support.createSession("session-A", "/workspace", Map.of());
+                support.createSession("session-A", "/workspace", Map.of());
         AcpAgentSupportBridge.AcpSessionBridge sessionB =
-            support.createSession("session-B", "/workspace", Map.of());
+                support.createSession("session-B", "/workspace", Map.of());
 
         sessionA.cancel(); // only session A is cancelled
 
         sessionB.streamPrompt("hello from B", List.of(), noopConsumer());
 
         ArgumentCaptor<AtomicBoolean> cancelledCaptor =
-            ArgumentCaptor.forClass(AtomicBoolean.class);
+                ArgumentCaptor.forClass(AtomicBoolean.class);
 
         verify(adapter).streamPrompt(
-            any(SessionContext.class),
-            any(String.class),
-            any(List.class),
-            any(AcpAgentSupportBridge.TokenConsumer.class),
-            cancelledCaptor.capture()
+                any(SessionContext.class),
+                any(String.class),
+                any(List.class),
+                any(AcpAgentSupportBridge.TokenConsumer.class),
+                cancelledCaptor.capture()
         );
 
         assertThat(cancelledCaptor.getValue().get())
-            .as("session B's AtomicBoolean must still be false – cancelling A must not affect B")
-            .isFalse();
+                .as("session B's AtomicBoolean must still be false – cancelling A must not affect B")
+                .isFalse();
     }
 
     // -----------------------------------------------------------------------
-    // Test 3 – cancel() during streaming: flag is visible to a concurrent reader
+    // Helper
     // -----------------------------------------------------------------------
 
     /**
@@ -111,15 +133,15 @@ class LangGraph4jAcpAgentSupportCancellationTest {
      */
     @Test
     void cancelDuringStreamingIsVisibleInsideAdapterCall() throws InterruptedException {
-        java.util.concurrent.CountDownLatch adapterEnteredLatch  = new java.util.concurrent.CountDownLatch(1);
-        java.util.concurrent.CountDownLatch cancelCalledLatch    = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch adapterEnteredLatch = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch cancelCalledLatch = new java.util.concurrent.CountDownLatch(1);
         AtomicBoolean flagSeenInsideAdapter = new AtomicBoolean(false);
 
         LangGraph4jAdapter adapter = mock(LangGraph4jAdapter.class);
         LangGraph4jAcpAgentSupport support = new LangGraph4jAcpAgentSupport(adapter);
 
         AcpAgentSupportBridge.AcpSessionBridge session =
-            support.createSession("session-concurrent", "/workspace", Map.of());
+                support.createSession("session-concurrent", "/workspace", Map.of());
 
         // When the mock adapter is called, it signals entry and then waits until
         // the test calls cancel() – then reads the flag.
@@ -135,7 +157,7 @@ class LangGraph4jAcpAgentSupportCancellationTest {
 
         // Run streamPrompt on a background thread
         Thread streamThread = new Thread(() ->
-            session.streamPrompt("prompt", List.of(), noopConsumer())
+                session.streamPrompt("prompt", List.of(), noopConsumer())
         );
         streamThread.setDaemon(true);
         streamThread.start();
@@ -148,20 +170,8 @@ class LangGraph4jAcpAgentSupportCancellationTest {
         streamThread.join(2000);
 
         assertThat(flagSeenInsideAdapter.get())
-            .as("the AtomicBoolean observed inside the adapter must be true after concurrent cancel()")
-            .isTrue();
-    }
-
-    // -----------------------------------------------------------------------
-    // Helper
-    // -----------------------------------------------------------------------
-
-    private static AcpAgentSupportBridge.TokenConsumer noopConsumer() {
-        return new AcpAgentSupportBridge.TokenConsumer() {
-            @Override public void onNext(String token) {}
-            @Override public void onComplete() {}
-            @Override public void onError(Throwable e) {}
-        };
+                .as("the AtomicBoolean observed inside the adapter must be true after concurrent cancel()")
+                .isTrue();
     }
 }
 
