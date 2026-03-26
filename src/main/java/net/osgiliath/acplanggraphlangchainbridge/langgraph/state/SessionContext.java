@@ -20,14 +20,19 @@ public record SessionContext(String sessionId, String cwd, Map<String, String> m
         sessionId = sessionId == null ? "" : sessionId;
         cwd = cwd == null || cwd.isBlank() ? "." : cwd;
         mcpServers = mcpServers == null || mcpServers.isEmpty()
-            ? Map.of()
-            : Collections.unmodifiableMap(new LinkedHashMap<>(mcpServers));
+                ? Map.of()
+                : Collections.unmodifiableMap(new LinkedHashMap<>(mcpServers));
     }
 
     public static SessionContext of(String sessionId, String cwd, Map<String, String> mcpServers) {
         return new SessionContext(sessionId, cwd, mcpServers);
     }
 
+    /**
+     * Returns an empty SessionContext with default values. Useful for testing or when no context is needed.
+     *
+     * @return an empty SessionContext instance
+     */
     public static SessionContext empty() {
         return EMPTY;
     }

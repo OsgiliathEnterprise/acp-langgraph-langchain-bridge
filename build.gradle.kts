@@ -80,15 +80,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-// Configure Kotlin compiler options
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_21)
-        // Ensure compatibility with Java-only dependencies
-        freeCompilerArgs.add("-Xjvm-default=all")
-    }
-}
-
 configurations.all {
     resolutionStrategy {
         force(libs.kotlinStdlib)
