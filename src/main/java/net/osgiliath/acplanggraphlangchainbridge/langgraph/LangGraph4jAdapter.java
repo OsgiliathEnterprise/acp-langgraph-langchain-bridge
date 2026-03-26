@@ -194,7 +194,7 @@ public class LangGraph4jAdapter {
             // with NodeOutput (state snapshots). We forward only the chunks.
             var states = app.stream(initialState);
 
-            processResponse(consumer, cancelled, states, effectiveSessionContext));
+            processResponse(consumer, cancelled, states, effectiveSessionContext);
 
         } catch (Throwable t) {
             log.warn("Prompt streaming failed for session {}", effectiveSessionContext.sessionId(), t);
