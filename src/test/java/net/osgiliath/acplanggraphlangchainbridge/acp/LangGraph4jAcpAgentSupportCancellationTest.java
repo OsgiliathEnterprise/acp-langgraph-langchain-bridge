@@ -35,14 +35,17 @@ class LangGraph4jAcpAgentSupportCancellationTest {
         return new AcpAgentSupportBridge.TokenConsumer() {
             @Override
             public void onNext(String token) {
+                // no-op
             }
 
             @Override
             public void onComplete() {
+                // no-op
             }
 
             @Override
             public void onError(Throwable e) {
+                // no-op
             }
         };
     }
