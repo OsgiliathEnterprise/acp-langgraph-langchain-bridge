@@ -115,8 +115,8 @@ jobs:
           name: build-folder
           path: .
 
-      - name: Run tests and generate JaCoCo report
-        run: ./gradlew --dependency-verification lenient test jacocoTestReport --stacktrace
+      - name: Run checks, tests, and generate JaCoCo report
+        run: ./gradlew check jacocoTestReport --stacktrace
 
       - name: Upload build folder for downstream analysis
         if: always()
@@ -191,7 +191,7 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
     name: Code Quality Checks
-    needs: build
+    needs: test
     continue-on-error: ${{ github.event_name == 'pull_request' }}
     timeout-minutes: 20
     permissions:
@@ -201,18 +201,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
+      - name: Download build folder from test job
+        uses: actions/download-artifact@v8
         with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: gradle
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-
-      - name: Run quality checks
-        run: ./gradlew --dependency-verification lenient check --stacktrace
+          name: build-folder-tested
+          path: .
 
       - name: Upload code quality reports
         if: always()
@@ -225,7 +218,7 @@ jobs:
   sonar:
     runs-on: ubuntu-latest
     name: SonarQube Analysis
-    needs: [test, code-quality]
+    needs: [ test, code-quality ]
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
     timeout-minutes: 20
     permissions:
@@ -325,7 +318,7 @@ jobs:
   ci-summary:
     runs-on: ubuntu-latest
     name: CI Summary
-    needs: [build, test, code-quality, sonar, dependency-submission]
+    needs: [ build, test, code-quality, sonar, dependency-submission ]
     if: always()
     timeout-minutes: 5
     permissions:
