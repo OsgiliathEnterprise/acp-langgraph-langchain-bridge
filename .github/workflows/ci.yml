@@ -32,7 +32,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@0723195856401067f7a2779048b490ace7a47d7c # v5.1.0
+        uses: gradle/actions/wrapper-validation@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # vv6.0.1
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
@@ -313,7 +313,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Submit dependency graph
-        uses: gradle/actions/dependency-submission@0723195856401067f7a2779048b490ace7a47d7c # v5.1.0
+        uses: gradle/actions/dependency-submission@39e147cb9de83bb9910b8ef8bd7fff0ee20fcd6f # v6.0.1
 
   ci-summary:
     runs-on: ubuntu-latest
