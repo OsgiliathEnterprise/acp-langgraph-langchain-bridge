@@ -74,5 +74,6 @@ class LangGraph4jAdapterSessionContextTest {
                     .addEdge("capture", END);
         }
     }
+    
 }
 

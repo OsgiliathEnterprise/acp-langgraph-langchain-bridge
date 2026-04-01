@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest(classes = AcpLangGraphLangChainBridgeApplication.class, properties = {
@@ -50,7 +51,7 @@ class LangChain4jAdapterIT {
 
             @Override
             public void onError(Throwable t) {
-                // Ignore errors for this test
+                fail("Should not have thrown an error: " + t.getMessage());
             }
         });
         await().atMost(5, SECONDS).untilTrue(completed);
@@ -74,7 +75,7 @@ class LangChain4jAdapterIT {
 
             @Override
             public void onError(Throwable t) {
-                // Ignore errors for this test
+                fail("Should not have thrown an error: " + t.getMessage());
             }
         });
         await().atMost(5, SECONDS).untilTrue(completed);

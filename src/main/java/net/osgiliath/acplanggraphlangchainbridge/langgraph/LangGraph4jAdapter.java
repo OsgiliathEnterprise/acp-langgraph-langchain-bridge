@@ -1,6 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph;
 
 import com.agentclientprotocol.model.ContentBlock;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
@@ -70,6 +71,8 @@ public class LangGraph4jAdapter {
      * @return true if the streaming was cancelled, false if it completed normally
      */
     private static boolean processResponse(AcpAgentSupportBridge.TokenConsumer consumer, AtomicBoolean cancelled, AsyncGenerator<NodeOutput<AcpState<ChatMessage>>> states, SessionContext effectiveSessionContext) {
+        AcpState<ChatMessage> lastState = null;
+        boolean hasStreamed = false;
         for (var nodeOutput : states) {
             if (cancelled.get()) {
                 log.info("Streaming cancelled for session {}", effectiveSessionContext.sessionId());
@@ -79,11 +82,22 @@ public class LangGraph4jAdapter {
             if (nodeOutput instanceof StreamingOutput<AcpState<ChatMessage>> streamingOutput) {
                 var chunk = streamingOutput.chunk();
                 if (chunk != null && !chunk.isEmpty()) {
+                    hasStreamed = true;
                     consumer.onNext(chunk);
                 }
             }
-            // Regular NodeOutput → state snapshot, nothing to forward
+            lastState = nodeOutput.state();
         }
+
+        // Fallback for non-streaming nodes or when no tokens were produced
+        if (!hasStreamed && lastState != null) {
+            lastState.lastMessage()
+                    .filter(AiMessage.class::isInstance)
+                    .map(AiMessage.class::cast)
+                    .map(AiMessage::text)
+                    .ifPresent(consumer::onNext);
+        }
+
         consumer.onComplete();
         return false;
     }
