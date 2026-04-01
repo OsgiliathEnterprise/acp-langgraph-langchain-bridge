@@ -1,6 +1,7 @@
 package net.osgiliath.acplanggraphlangchainbridge.langgraph;
 
 import com.agentclientprotocol.model.ContentBlock;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import net.osgiliath.acplanggraphlangchainbridge.acp.AcpAgentSupportBridge;
@@ -89,11 +90,12 @@ public class LangGraph4jAdapter {
         }
 
         // Fallback for non-streaming nodes or when no tokens were produced
-        if (!hasStreamed && lastState != null && lastState.lastMessage().isPresent()) {
-            ChatMessage lastMessage = lastState.lastMessage().get();
-            if (lastMessage instanceof dev.langchain4j.data.message.AiMessage aiMessage) {
-                consumer.onNext(aiMessage.text());
-            }
+        if (!hasStreamed && lastState != null) {
+            lastState.lastMessage()
+                    .filter(AiMessage.class::isInstance)
+                    .map(AiMessage.class::cast)
+                    .map(AiMessage::text)
+                    .ifPresent(consumer::onNext);
         }
 
         consumer.onComplete();
