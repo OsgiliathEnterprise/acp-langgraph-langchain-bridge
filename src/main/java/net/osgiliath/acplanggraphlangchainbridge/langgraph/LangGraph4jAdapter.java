@@ -70,6 +70,8 @@ public class LangGraph4jAdapter {
      * @return true if the streaming was cancelled, false if it completed normally
      */
     private static boolean processResponse(AcpAgentSupportBridge.TokenConsumer consumer, AtomicBoolean cancelled, AsyncGenerator<NodeOutput<AcpState<ChatMessage>>> states, SessionContext effectiveSessionContext) {
+        AcpState<ChatMessage> lastState = null;
+        boolean hasStreamed = false;
         for (var nodeOutput : states) {
             if (cancelled.get()) {
                 log.info("Streaming cancelled for session {}", effectiveSessionContext.sessionId());
@@ -79,11 +81,21 @@ public class LangGraph4jAdapter {
             if (nodeOutput instanceof StreamingOutput<AcpState<ChatMessage>> streamingOutput) {
                 var chunk = streamingOutput.chunk();
                 if (chunk != null && !chunk.isEmpty()) {
+                    hasStreamed = true;
                     consumer.onNext(chunk);
                 }
             }
-            // Regular NodeOutput → state snapshot, nothing to forward
+            lastState = nodeOutput.state();
         }
+
+        // Fallback for non-streaming nodes or when no tokens were produced
+        if (!hasStreamed && lastState != null && lastState.lastMessage().isPresent()) {
+            ChatMessage lastMessage = lastState.lastMessage().get();
+            if (lastMessage instanceof dev.langchain4j.data.message.AiMessage aiMessage) {
+                consumer.onNext(aiMessage.text());
+            }
+        }
+
         consumer.onComplete();
         return false;
     }

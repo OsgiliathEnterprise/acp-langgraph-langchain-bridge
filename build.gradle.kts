@@ -137,6 +137,7 @@ dependencies {
     testImplementation(libs.cucumberSpring)
     testImplementation(libs.cucumberJunitPlatformEngine)
     testImplementation(libs.junitPlatformSuite)
+    implementation(kotlin("stdlib"))
 }
 
 tasks.withType<Jar> {
