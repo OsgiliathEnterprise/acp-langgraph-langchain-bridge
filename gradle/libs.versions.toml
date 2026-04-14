@@ -14,7 +14,7 @@ kotlinxCoroutines = "1.9.0"
 junitJupiter = "5.14.2"
 awaitility = "4.2.2"
 jacoco = "0.8.12"
-junitPlatform = "1.14.2"
+junitPlatform = "6.0.3"
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBoot" }
